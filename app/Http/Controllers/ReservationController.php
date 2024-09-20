@@ -17,12 +17,8 @@ class ReservationController extends Controller
          */
         public function index(): \Illuminate\Http\JsonResponse
         {
-     
-            $user = Auth()->user();
-
             $data = Reservations::leftjoin("outils","reservations.outil_id","=","outils.id")
                             ->select("reservations.*","outils.nom")
-                            ->where('reservations.user_id', $user->id)
                             ->get();
 
             return response()->json(['status' => true, 'data' => $data]);
@@ -46,11 +42,24 @@ class ReservationController extends Controller
          */
         public function store(Request $request): \Illuminate\Http\JsonResponse
         {            
-            $user = Auth()->user();
-            \DB::enableQueryLog();
+            //\DB::enableQueryLog();
 
-            if ($user->id != $request->user_id) {
-                return response()->json(['status' => false, 'message' => 'Not allowed']);
+            $validateReq = Validator::make($request->all(),
+                [
+                    'nom' => 'required',
+                    'prenom' => 'required',
+                    'email' => 'required',
+                    'outil_id' => 'required',
+                    'debut' => 'required',
+                    'fin' => 'required'
+                ]);
+    
+            if ($validateReq->fails()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'validation error',
+                    'errors' => $validateReq->errors()
+                ], 401);
             }
 
             //Verifie la disponibilite
@@ -76,17 +85,8 @@ class ReservationController extends Controller
                 return response()->json(['status' => false, 'message' => "L'article n'est pas disponible sur la période"]);
             }
 
-            //Recherche si cette reservation existe deja
-            $data = Reservations::where('user_id', $request->user_id)
-                                ->where('outil_id', $request->outil_id)
-                                ->whereDate('fin','>=',$request->debut)
-                                ->whereDate('debut','<=',$request->fin);
-
-            if ($data->first()) {
-                return response()->json(['status' => false, 'message' => 'Vous avez déjà cette réservation pour cette période']);
-            }
             $req = $request->all();
-
+            $req['paiement_state'] = 'Non payé';
             $data = Reservations::create($req);
             return response()->json(['status' => true, 'data' => $data], 201);
         }
@@ -100,6 +100,7 @@ class ReservationController extends Controller
         public function show($id): \Illuminate\Http\JsonResponse
         {
             $response = Reservations::findOrFail($id);
+            
             return response()->json($response, 200);
         }
     
@@ -125,7 +126,7 @@ class ReservationController extends Controller
         {
             $validateReq = Validator::make($request->all(),
                 [
-                    'user_id' => 'required',
+                    'nom' => 'required',
                     'outil_id' => 'required',
                     'debut' => 'required',
                     'fin' => 'required'

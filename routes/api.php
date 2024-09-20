@@ -9,7 +9,9 @@ use App\Http\Controllers\FileUpload;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\AdminReservations;
 use App\Http\Controllers\UsersController;
-
+use App\Http\Controllers\CategoriesController;
+use App\Http\Controllers\HelloassoController;
+use App\Http\Controllers\CaracoutilsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -25,18 +27,24 @@ use App\Http\Controllers\UsersController;
 Route::post('/auth/register', [AuthController::class, 'register']);
 Route::post('/auth/login', [AuthController::class, 'login']);
 
-Route::apiResource('todos', TodoController::class)->middleware('auth:sanctum');
-//Route::apiResource('outils', OutilsController::class)->middleware('auth:sanctum');
 
-Route::get('outils', [OutilsController::class,'index'])->middleware('auth:sanctum');
-Route::get('outils/{outil}', [OutilsController::class,'show'])->middleware('auth:sanctum');
+Route::get('outils', [OutilsController::class,'index']);
+Route::get('outilsbycat/{categorie}', [OutilsController::class,'indexbycategorie']);
+Route::get('outils/{outil}', [OutilsController::class,'show']);
 Route::post('outils', [OutilsController::class,'store'])->middleware('auth:sanctum','role:admin');
 Route::put('outils/{outil}', [OutilsController::class,'update'])->middleware('auth:sanctum','role:admin');
 Route::delete('outils/{outil}', [OutilsController::class,'destroy'])->middleware('auth:sanctum','role:admin');
 
-Route::apiResource('reservations', ReservationController::class)->middleware('auth:sanctum');
-Route::apiResource('adminreservations', AdminReservations::class)->middleware('auth:sanctum','role:admin');
+Route::apiResource('reservations', ReservationController::class);
 
+Route::apiResource('adminreservations', AdminReservations::class)->middleware('auth:sanctum','role:admin');
+Route::apiResource('categories', CategoriesController::class)->middleware('auth:sanctum');
+Route::get('categoriesdetailed', [CategoriesController::class,'indexchilds']);
+Route::apiResource('caracoutils', CaracoutilsController::class)->middleware('auth:sanctum');
+
+Route::get('helloasso', [HelloassoController::class,'index']);
+Route::get('encaissement/{resa}', [HelloassoController::class,'encaissement']);
+Route::get('checkpaiement/{resa}', [HelloassoController::class,'checkPaiement']);
 
 
 Route::post('/upload-file', [FileUpload::class, 'fileUpload'])->name('fileUpload')->middleware('auth:sanctum');

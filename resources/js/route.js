@@ -8,24 +8,8 @@ const router = createRouter({
             component: () => import('./pages/Home.vue')
         },
         {
-            path: '/register',
-            component: () => import('./pages/Register.vue')
-        },
-        {
-            path: '/login',
-            component: () => import('./pages/Login.vue')
-        },
-        {
             path: '/home',
             component: () => import('./pages/Home.vue')
-        },
-        {
-            path: '/editoutils',
-            component: () => import('./pages/OutilsEditions.vue')
-        },
-        {
-            path: '/reservations',
-            component: () => import('./pages/ReservationsPage.vue')
         },
         {
             path: '/reservation/:outilid',
@@ -33,15 +17,52 @@ const router = createRouter({
             props: true
         },
         {
-            path: '/profil',
-            component: () => import('./pages/User.vue'),
+           // path: '/confirmation/:resaid/:checkoutIntentId/:code/:orderId',
+            path: '/confirmation/:resaid',
+            component: () => import('./pages/Confirmation.vue'),
+            props: true
+        },
+
+
+        /** ADMIN */
+        {
+            path: '/register',
+            component: () => import('./pages/admin/Register.vue')
+        },
+        {
+            path: '/login',
+            component: () => import('./pages/admin/Login.vue')
+        },
+        {
+            path: '/admin',
+            component: () => import('./pages/admin/Edit.vue')
+        },
+        {
+            path: '/editoutil/:outilid',
+            component: () => import('./pages/admin/OutilsEditions.vue'),
+            props:true
+        },
+        {
+            path: '/reservations',
+            component: () => import('./pages/admin/Reservations.vue')
+        },
+        {
+            path: '/categories',
+            component: () => import('./pages/admin/Categories.vue'),
+            props: true
+        },
+        {
+            path: '/profile',
+            component: () => import('./pages/admin/User.vue'),
             props: true
         }
 
     ],
 })
+
+
 router.beforeEach((to, from, next) => {
-    if (to.path !== '/login' && to.path !== '/register' && !isAuthenticated()) {
+    if ( !isAuthenticated() && (to.path in ['/admin','/editoutil','/reservations','/categories'])) {
         return next({path: '/login'})
     }
     return next()

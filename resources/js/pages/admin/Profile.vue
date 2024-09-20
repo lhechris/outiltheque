@@ -11,7 +11,7 @@
 </template>
 
 <script>
-import { request } from '../helper'
+import { request } from '../../helper'
 import {ref, onMounted} from 'vue'
 import moment from 'moment'
 import 'moment/dist/locale/fr';

@@ -1,0 +1,246 @@
+== Info:   Trying 13.107.253.45:443...
+== Info: Connected to api.helloasso.com (13.107.253.45) port 443 (#0)
+== Info: ALPN: offers h2,http/1.1
+=> Send SSL data, 5 bytes (0x5)
+0000: .....
+== Info: TLSv1.3 (OUT), TLS handshake, Client hello (1):
+=> Send SSL data, 512 bytes (0x200)
+0000: ..........G.Y6Z..]..*.i.4JeN..%.Q..|.. *1...lV^.P..Ol...T.....UB
+0040: .$.u....>.......,.0.........+./...$.(.k.#.'.g.....9.....3.....=.
+0080: <.5./.....u.........api.helloasso.com...........................
+00c0: ..............h2.http/1.1.........1.....*.(.....................
+0100: ....................+............-.....3.&.$... ....-+..hwK2....
+0140: ...xc.....^....[................................................
+0180: ................................................................
+01c0: ................................................................
+== Info:  CAfile: /etc/ssl/certs/ca-certificates.crt
+== Info:  CApath: /etc/ssl/certs
+<= Recv SSL data, 5 bytes (0x5)
+0000: ....X
+== Info: TLSv1.3 (IN), TLS handshake, Server hello (2):
+<= Recv SSL data, 88 bytes (0x58)
+0000: ...T...!.t..a......e......z..^......3. *1...lV^.P..Ol...T.....UB
+0040: .$.u.........+.....3....
+=> Send SSL data, 5 bytes (0x5)
+0000: .....
+== Info: TLSv1.3 (OUT), TLS change cipher, Change cipher spec (1):
+=> Send SSL data, 1 bytes (0x1)
+0000: .
+=> Send SSL data, 5 bytes (0x5)
+0000: .....
+== Info: TLSv1.3 (OUT), TLS handshake, Client hello (1):
+=> Send SSL data, 512 bytes (0x200)
+0000: ..........G.Y6Z..]..*.i.4JeN..%.Q..|.. *1...lV^.P..Ol...T.....UB
+0040: .$.u....>.......,.0.........+./...$.(.k.#.'.g.....9.....3.....=.
+0080: <.5./.....u.........api.helloasso.com...........................
+00c0: ..............h2.http/1.1.........1.....*.(.....................
+0100: ....................+............-.....3.G.E...A.r{.?C......3...
+0140: *L.a...5M.Q.....f.NCE}.LZ....t1..|om.k..Js....".................
+0180: ................................................................
+01c0: ................................................................
+<= Recv SSL data, 5 bytes (0x5)
+0000: .....
+<= Recv SSL data, 5 bytes (0x5)
+0000: .....
+== Info: TLSv1.3 (IN), TLS handshake, Server hello (2):
+<= Recv SSL data, 155 bytes (0x9b)
+0000: .......6$.f.........n..;..c.....Y).... *1...lV^.P..Ol...T.....UB
+0040: .$.u.......O.+.....3.E...A.&}u..T..Y..i I...2.N...+....*D....Z..
+0080: l.B............@..d........
+<= Recv SSL data, 5 bytes (0x5)
+0000: ....$
+<= Recv SSL data, 1 bytes (0x1)
+0000: .
+== Info: TLSv1.3 (IN), TLS handshake, Encrypted Extensions (8):
+<= Recv SSL data, 19 bytes (0x13)
+0000: .................h2
+<= Recv SSL data, 5 bytes (0x5)
+0000: ....#
+<= Recv SSL data, 1 bytes (0x1)
+0000: .
+== Info: TLSv1.3 (IN), TLS handshake, Certificate (11):
+<= Recv SSL data, 2578 bytes (0xa12)
+0000: ...........0...0...........+...:I./. .b.R>..0...*.H........031.0
+0040: ...U....US1.0...U....Let's Encrypt1.0...U....R110...240912093901
+0080: Z..241211093900Z0.1.0...U....api.helloasso.com0.."0...*.H.......
+00c0: ......0............+_cr.}.....u/v..j.=..l..y.....{.J...-CKc..zd\
+0100: ......$...ka.,.{.....?...!%.....X0A.)....7..c.0p\|.....Yp..^....
+0140: .....D.|../.....J@8........DU2.........0....v....!.!...w6.{.X..;
+0180: 3.B/J...(..(b!.a....H...O..\+./xdgu..Z..C<....X...0.T...x.5qZ`.f
+01c0: q.I..+.s'....i5.........0...0...U...........0...U.%..0...+......
+0200: ...+.......0...U.......0.0...U......o.KOr@..p..U{.......0...U.#.
+0240: .0.....F.....zl..-.^./&..0W..+........K0I0"..+.....0...http://r1
+0280: 1.o.lencr.org0#..+.....0...http://r11.i.lencr.org/0...U....0...a
+02c0: pi.helloasso.com0...U. ..0.0...g.....0.....+.....y............v.
+0300: H..k..G4..j...0..R..V.,.....9..s......F......G0E.!......u.......
+0340: +]..w.h....Y3.....j. .....:s.Z.......^...t.7.9.j..;.^.v.?.KO."GX
+0380: ..e.......7...j...(...dn......F......G0E.!.....[...~.T..e..k4.e.
+03c0: t#.E..3...6. ..c...z.>.$...*....w..(1........0...*.H............
+0400: ..^W..7..r.z.....^.=!....K.[....SJa5..%....7........2t....6H.P..
+0440: X2$..a0............~t..Ye.._.B....D.....w...e.=....C..F`......F.
+0480: 6.NIr..]..!.W_...bi..#YD..46)......|n.$.............B..5==w....C
+04c0: .6....{.Ib....v....i..&L..r.; R...o....Z#.^xaV...5..QYtZ.c.Xu.F.
+0500: ......0...0............}>../0.#..).k4.0...*.H........0O1.0...U..
+0540: ..US1)0'..U... Internet Security Research Group1.0...U....ISRG R
+0580: oot X10...240313000000Z..270312235959Z031.0...U....US1.0...U....
+05c0: Let's Encrypt1.0...U....R110.."0...*.H.............0...........\
+0600: ..9.....g...<.N.a.&.R.....(.(..'.$.9g.....:.;w....9TA.N.A..t.Q..
+0640: {.X......1..r.rj..t..F.d....."......&z?..X.{....q....1....PM_..v
+0680: =Z......f...fCH..e.7....2.........'...c..l.'gK..(^i.y.I\.$P.....
+06c0: .{@m...A?.X./.\..........9....E.x.e*.._<..\M...'+..BwSOyj.......
+0700: ....0..0...U...........0...U.%..0...+.........+.......0...U.....
+0740: ..0.......0...U........F.....zl..-.^./&..0...U.#..0...y.Y.{....s
+0780: .....X...n02..+........&0$0"..+.....0...http://x1.i.lencr.org/0.
+07c0: ..U. ..0.0...g.....0'..U... 0.0.......http://x1.c.lencr.org/0...
+0800: *.H.............N..]....8....q\....7.zo.%............r......SH..
+0840: .iB...>5......_.....I.......&...$.H M..T...!..6..wd)...K.]..y...
+0880: ..#...J.H1t.D....-.q.u{.....F.....tH%*....C......../.j..1.c..)..
+08c0: f,?..gQ.A<.M.....fc...#..S..q....q.6...*2..1|..s....J.jw.Z...E..
+0900: *d.0>s.....;cJ.F....F@'`c.P:.G..J..G..Z.b..l3.M.8.H-..h..].L.. A
+0940: _h..Z.....1..C.IC...?.<..E0i..r.y..1.>#W..O.....w.o........9K.U.
+0980: .j.......K...;r.J.T...8.`..n5.u.T./.n....7.......uFOw..YV.f-n.).
+09c0: ....^dE.,..dBD..O.............c.f..r.........5.....s#t....;J..X.
+0a00: ....5.~;E.0FRk....
+<= Recv SSL data, 5 bytes (0x5)
+0000: .....
+<= Recv SSL data, 1 bytes (0x1)
+0000: .
+== Info: TLSv1.3 (IN), TLS handshake, CERT verify (15):
+<= Recv SSL data, 264 bytes (0x108)
+0000: ..............{.......}=..)..A........5.i...{6.C.`.....T.,.x@.t.
+0040: .`....=qs.y_.$6i...aV.......(...n..[9.O.j..T..w;..MTNW....u.R..{
+0080: p...z\.....a.....(c8..P.Y.5.i.\.r.F...zcjc..$........{.....;.g..
+00c0: . h.........K"......L.X..v....x..m_..*SC..dE..IS9........5.6D..(
+0100: ..O....D
+<= Recv SSL data, 5 bytes (0x5)
+0000: ....E
+<= Recv SSL data, 1 bytes (0x1)
+0000: .
+== Info: TLSv1.3 (IN), TLS handshake, Finished (20):
+<= Recv SSL data, 52 bytes (0x34)
+0000: ...0....^.......@+..n.N...1o....\t..........o......k
+=> Send SSL data, 5 bytes (0x5)
+0000: ....E
+=> Send SSL data, 1 bytes (0x1)
+0000: .
+== Info: TLSv1.3 (OUT), TLS handshake, Finished (20):
+=> Send SSL data, 52 bytes (0x34)
+0000: ...0:......:.<........._..........%.G...G.[..$.=.._.
+== Info: SSL connection using TLSv1.3 / TLS_AES_256_GCM_SHA384
+== Info: ALPN: server accepted h2
+== Info: Server certificate:
+== Info:  subject: CN=api.helloasso.com
+== Info:  start date: Sep 12 09:39:01 2024 GMT
+== Info:  expire date: Dec 11 09:39:00 2024 GMT
+== Info:  subjectAltName: host "api.helloasso.com" matched cert's "api.helloasso.com"
+== Info:  issuer: C=US; O=Let's Encrypt; CN=R11
+== Info:  SSL certificate verify ok.
+=> Send SSL data, 5 bytes (0x5)
+0000: ....Q
+=> Send SSL data, 1 bytes (0x1)
+0000: .
+== Info: using HTTP/2
+== Info: h2h3 [:method: POST]
+== Info: h2h3 [:path: /oauth2/token]
+== Info: h2h3 [:scheme: https]
+== Info: h2h3 [:authority: api.helloasso.com]
+== Info: h2h3 [user-agent: curl/7.88.1]
+== Info: h2h3 [accept: */*]
+== Info: h2h3 [content-length: 71]
+== Info: h2h3 [content-type: application/x-www-form-urlencoded]
+== Info: Using Stream ID: 1 (easy handle 0x55c9ef569520)
+=> Send SSL data, 5 bytes (0x5)
+0000: ....c
+=> Send SSL data, 1 bytes (0x1)
+0000: .
+=> Send header, 161 bytes (0xa1)
+0000: POST /oauth2/token HTTP/2
+001b: Host: api.helloasso.com
+0034: user-agent: curl/7.88.1
+004d: accept: */*
+005a: content-length: 71
+006e: content-type: application/x-www-form-urlencoded
+009f: 
+=> Send SSL data, 5 bytes (0x5)
+0000: ....a
+=> Send SSL data, 1 bytes (0x1)
+0000: .
+=> Send data, 71 bytes (0x47)
+0000: client_id=mon-id&client_secret=mon-secret&grant_type=client_cred
+0040: entials
+== Info: We are completely uploaded and fine
+<= Recv SSL data, 5 bytes (0x5)
+0000: .....
+<= Recv SSL data, 1 bytes (0x1)
+0000: .
+== Info: TLSv1.3 (IN), TLS handshake, Newsession Ticket (4):
+<= Recv SSL data, 265 bytes (0x109)
+0000: .......................PAR20-0917T08:45..........j....A./.B.....
+0040: ...Qs:{T.Sn.....v.T.....T....W...><1B......p.W..C.A+.hc6....r.ft
+0080: ........,Q......[5.../q.x.v(..>....qn..o.9.M"....p}....T...f...y
+00c0: ,.d.S.;TrM...H.L.`....0.6Z!..{K......d.....~..,.Y.....A>..SK."..
+0100: {+.}9w...
+<= Recv SSL data, 5 bytes (0x5)
+0000: .....
+<= Recv SSL data, 1 bytes (0x1)
+0000: .
+== Info: TLSv1.3 (IN), TLS handshake, Newsession Ticket (4):
+<= Recv SSL data, 265 bytes (0x109)
+0000: ........q1.............PAR20-0917T08:45..6U...........[U;2...!..
+0040: E-..~..4UI..N..Nvrn-./...$..7 .o.._{.......XL.n#..-p.Yjx..^.I.O.
+0080: .....d....R.apv..q...A.;.KC....I.v.A#.......*N.q.|o.+@Y.gr......
+00c0: h..T..~...g.|47p.....2...=..e.~KZ.\.._.}.$......|..*t......y..7U
+0100: ...Y../..
+== Info: old SSL session ID is stale, removing
+<= Recv SSL data, 5 bytes (0x5)
+0000: ....B
+<= Recv SSL data, 1 bytes (0x1)
+0000: .
+=> Send SSL data, 5 bytes (0x5)
+0000: .....
+=> Send SSL data, 1 bytes (0x1)
+0000: .
+<= Recv SSL data, 5 bytes (0x5)
+0000: ....$
+<= Recv SSL data, 1 bytes (0x1)
+0000: .
+<= Recv header, 13 bytes (0xd)
+0000: HTTP/2 401 
+<= Recv header, 37 bytes (0x25)
+0000: date: Tue, 17 Sep 2024 13:50:10 GMT
+<= Recv header, 47 bytes (0x2f)
+0000: content-type: application/json; charset=utf-8
+<= Recv header, 25 bytes (0x19)
+0000: cache-control: no-cache
+<= Recv header, 13 bytes (0xd)
+0000: expires: -1
+<= Recv header, 18 bytes (0x12)
+0000: pragma: no-cache
+<= Recv header, 144 bytes (0x90)
+0000: set-cookie: TiPMix=12.152765593219161; path=/; HttpOnly; Domain=
+0040: api-authentication-prod.azurewebsites.net; Max-Age=3600; Secure;
+0080:  SameSite=None
+<= Recv header, 141 bytes (0x8d)
+0000: set-cookie: x-ms-routing-name=self; path=/; HttpOnly; Domain=api
+0040: -authentication-prod.azurewebsites.net; Max-Age=3600; Secure; Sa
+0080: meSite=None
+<= Recv header, 74 bytes (0x4a)
+0000: strict-transport-security: max-age=63072000; includeSubDomains; 
+0040: preload;
+<= Recv header, 80 bytes (0x50)
+0000: x-azure-ref: 20240917T135010Z-r1d95fb5999tk8d5ycc906hr2000000007
+0040: 3g00000000s5zp
+<= Recv header, 25 bytes (0x19)
+0000: x-cache: CONFIG_NOCACHE
+<= Recv header, 2 bytes (0x2)
+0000: 
+<= Recv data, 80 bytes (0x50)
+0000: {"error":"unauthorized_client","error_description":"Invalid clie
+0040: nt_id 'mon-id'"}
+<= Recv SSL data, 5 bytes (0x5)
+0000: .....
+<= Recv SSL data, 1 bytes (0x1)
+0000: .
+== Info: Connection #0 to host api.helloasso.com left intact
+== Info: Could not resolve host: application
+== Info: Closing connection 1

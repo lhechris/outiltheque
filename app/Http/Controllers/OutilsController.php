@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Outils;
+use App\Models\File;
+use App\Models\Caracoutils;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -18,7 +20,27 @@ class OutilsController extends Controller
  
         //$data = Outils::query()->get();
         $data = Outils::leftjoin("files","outils.file_id","=","files.id")
-                        ->select("outils.*","files.file_path")
+                        ->leftjoin("categories","outils.categorie_id","=","categories.id")
+                        ->select("outils.*","categories.nom as categorie","files.file_path")
+                        ->get();
+
+
+        return response()->json(['status' => true, 'data' => $data]);
+    }
+
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function indexbycategorie($id): \Illuminate\Http\JsonResponse
+    {
+ 
+        //$data = Outils::query()->get();
+        $data = Outils::leftjoin("files","outils.file_id","=","files.id")
+                        ->leftjoin("categories","outils.categorie_id","=","categories.id")
+                        ->select("outils.*","categories.nom as categorie","files.file_path")
+                        ->where("outils.categories_id","=",$id)
                         ->get();
         return response()->json(['status' => true, 'data' => $data]);
     }
@@ -60,11 +82,26 @@ class OutilsController extends Controller
     {
         //$response = Outils::findOrFail($id);
         $response = Outils::leftjoin("files","outils.file_id","=","files.id")
-                        ->select("outils.*","files.file_path")
-                        ->where("outils.id",'=',$id)
-                        ->get();
+                        ->leftjoin("categories","outils.categorie_id","=","categories.id")
+                        ->select("outils.*","categories.nom as categorie","files.file_path")
+                        ->where("outils.id",'=',$id);
 
-        return response()->json($response->first(), 200);
+        //Get all caracteristiques
+        $caract=Caracoutils::where("outil_id","=",$id);
+
+
+
+        $data = $response->first();
+
+        $f2 = File::where("id","=",$data->file2_id)->first();
+        if ($f2) {
+            $data['file2_path'] = $f2['file_path'];
+            $data['file2_id'] = $f2['id'];
+        }
+        $data["caracteristique"] = $caract->get();
+
+
+        return response()->json($data, 200);
     }
 
     /**
@@ -91,6 +128,7 @@ class OutilsController extends Controller
             [
                 'description' => 'required',
                 'nom' => 'required',
+                'categorie_id' => 'required',
             ]);
 
         if ($validateUser->fails()) {
@@ -106,9 +144,24 @@ class OutilsController extends Controller
         $data->description = $request->description;
         $data->prix = $request->prix;
         $data->duree = $request->duree;
+        $data->conseil = $request->conseil;
+        $data->precaution = $request->precaution;
         $data->nombre = $request->nombre;
         $data->file_id = $request->file_id;
+        $data->file2_id = $request->file2_id;
+        $data->categorie_id = $request->categorie_id;
         $data->update();
+        foreach ($request->caracteristique as $c) {
+            if ((!array_key_exists('id',$c)) || ($c['id'] == 0)) {
+                Caracoutils::create($c);
+            } else {
+                $caract = Caracoutils::find($c['id']);
+                $caract->nom = $c['nom'];
+                $caract->valeur = $c['valeur'];
+                $caract->update();
+            }
+        }
+
         return response()->json(['status' => true, 'data' => $data], 202);
     }
 

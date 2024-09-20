@@ -15,12 +15,14 @@ return new class extends Migration
     {
         Schema::create('reservations', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('user_id');
+            $table->string('nom');
+            $table->string('prenom');
+            $table->string('email');
             $table->unsignedBigInteger('outil_id');
             $table->dateTime('debut');
             $table->dateTime('fin')->nullable();
-            $table->foreign('user_id')->references('id')->on('users');
-            $table->foreign('outil_id')->references('id')->on('outils');
+            $table->string("paiement_state");
+            $table->unsignedBigInteger('paiement_id');
             $table->timestamps();
         });
     }

@@ -13,15 +13,10 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('journal_reservations', function (Blueprint $table) {
+        Schema::create('helloasso', function (Blueprint $table) {
             $table->id();
             $table->string('nom');
-            $table->string('prenom');
-            $table->string('email');
-            $table->dateTime('debut');
-            $table->dateTime('fin')->nullable();
-            $table->string("commentaire");
-            $table->unsignedBigInteger('paiement_id');
+            $table->string('valeur');
             $table->timestamps();
         });
     }
@@ -33,6 +28,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('table_reservations');
+        Schema::dropIfExists('table_helloasso');
     }
 };

@@ -19,8 +19,7 @@ class AdminReservations extends Controller
         {
            // \DB::enableQueryLog();
             $data = Reservations::leftjoin("outils","reservations.outil_id","=","outils.id")
-                            ->leftjoin("users","reservations.user_id","=","users.id")
-                            ->select("reservations.*","outils.nom", "users.username")
+                            ->select("reservations.*","outils.nom as nomoutil")
                             ->get();
 
            // \Log::info(\DB::getQueryLog());
@@ -68,14 +67,6 @@ class AdminReservations extends Controller
                 return response()->json(['status' => false, 'message' => "L'article n'est pas disponible sur la période"]);
             }
 
-            //Recherche si cette reservation existe deja
-            $data = Reservations::where('user_id', $request->user_id)
-                                ->where('outil_id', $request->outil_id)
-                                ->where('debut', $request->debut);
-
-            if ($data->first()) {
-                return response()->json(['status' => false, 'message' => 'Cette réservation existe dejà']);
-            }
             $req = $request->all();
 
             $data = Reservations::create($req);
@@ -116,7 +107,6 @@ class AdminReservations extends Controller
         {
             $validateReq = Validator::make($request->all(),
                 [
-                    'user_id' => 'required',
                     'outil_id' => 'required',
                     'debut' => 'required',
                     'fin' => 'required'
@@ -131,7 +121,6 @@ class AdminReservations extends Controller
             }
     
             $data = Reservations::find($id);
-            $data->user_id = $request->user_id;
             $data->outil_id = $request->outil_id;
             $data->debut = $request->debut;
             $data->fin = $request->fin;

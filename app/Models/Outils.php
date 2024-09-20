@@ -16,7 +16,11 @@ class Outils extends Model
         'prix',
         'nombre',
         'duree',
-        'file_id'
+        'conseil',
+        'precaution',
+        'categorie_id',
+        'file_id',
+        'file2_id'
     ];
 
     public function file() : HasOne{

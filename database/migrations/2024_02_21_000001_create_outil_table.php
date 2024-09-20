@@ -20,7 +20,11 @@ return new class extends Migration
             $table->integer('prix');
             $table->integer('duree');
             $table->integer('nombre');
-            $table->integer('file_id')->nullable()->references('id')->on('users');;
+            $table->integer('categorie_id');
+            $table->integer('file_id')->nullable()->references('id')->on('files');
+            $table->integer('file2_id')->nullable()->references('id')->on('files');
+            $table->string("conseil")->nullable();
+            $table->string("precaution")->nullable();
             $table->timestamps();
         });
     }

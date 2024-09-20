@@ -1,125 +1,149 @@
 <template>
-    <page>
+    <enveloppe>
         <div class="grid justify-center gap-5" >
             <h1 >Réservation</h1>
-            <div v-if="outils" class="flex ">
-                <div>
-                    <img class="object-contain h-48 w-96":src="outils.file_path" />
-                </div>
-                <div class="flex flex-col justify-start gap-4">
-                    <p>{{ outils.nom }}</p>
-                    <p>{{ outils.description }}</p>
-                    <div >
-                        <div>
-                            <label for="debut" class="mb-1 block text-sm font-medium text-gray-700">Date de début</label>
-                            <input  type="date" 
-                                    id="debut" 
-                                    v-model="debut" 
-                                    class="block border rounded-md border-gray-300 shadow-sm focus:border-blue-400 focus:ring focus:ring-blue-200 focus:ring-opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500" 
-                                    placeholder="date de début" 
-                                    @change="changedebut()"/>
-                        </div>
-                    </div>
-                    
-                    <div >
-                        <div>
-                            <label for="fin" class="mb-1 block text-sm font-medium text-gray-700">Date de fin ({{ outils.duree }}j maximum)</label>
-                            <input type="date" id="fin" v-model="fin" class="block border rounded-md border-gray-300 shadow-sm focus:border-blue-400 focus:ring focus:ring-blue-200 focus:ring-opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500" placeholder="Nb de jour" />
-                        </div>
-                    </div>
 
-                    <button type="button" 
+            <div v-if="affichepaiement" >
+                <paiement :resa="resa" @onValid="paiementValid"></paiement>
+            </div>
+            <div v-else>
+                <div v-if="outil" class="flex flex-col gap-4">
+                    <info-resa :outil="outil" 
+                            v-model:nom="nom"
+                            v-model:prenom="prenom"
+                            v-model:debut="debut"
+                            v-model:fin="fin"
+                            v-model:email="email"></info-resa>
+                    <div class="flex flex-row gap-4 pb-10">
+                        <button type="button" 
                             class="rounded-lg border border-blue-500 bg-blue-500 px-5 py-2.5 text-center text-sm font-medium text-white shadow-sm transition-all hover:border-blue-700 hover:bg-blue-700 focus:ring focus:ring-blue-200 disabled:cursor-not-allowed disabled:border-blue-300 disabled:bg-blue-300"
                             @click="reserver"
-                    >Réserver
-                    </button>
+                        >Réserver</button>
+                        <button type="button" 
+                            class="rounded-lg border border-blue-500 bg-blue-500 px-5 py-2.5 text-center text-sm font-medium text-white shadow-sm transition-all hover:border-blue-700 hover:bg-blue-700 focus:ring focus:ring-blue-200 disabled:cursor-not-allowed disabled:border-blue-300 disabled:bg-blue-300"
+                            @click="annuler"
+                        >Annuler</button>
+                    </div>
+
+
                 </div>
             </div>
             <p v-if="message" class="rounded-md bg-green-50 p-4 text-sm text-green-500">{{ message }}</p>
             <p v-if="erreur" class="rounded-md bg-red-50 p-4 text-sm text-red-500">{{ erreur }}</p>
+            
         </div>
-    </page>
+    </enveloppe>
 
 </template>
-<script>
-import {ref, onMounted} from 'vue'
-import {useRouter} from "vue-router";
-import {request} from '../helper'
-import Cards from '../components/template2/Cards.vue';
-import Page from './Page.vue'
-import moment from 'moment'
+<script setup>
+    import {ref, onMounted} from 'vue'
+    import {useRouter} from "vue-router";
+    import {request} from '../helper'
 
-export default {
-    components: {
-        Page,Cards
-    },
-    props : ['outilid'],    
+    import Enveloppe from '../components/Enveloppe.vue'
+    import InfoResa from '../components/Inforesa.vue'
+    import Paiement from '../components/Paiement.vue'
 
-    setup(props) {
-        const outils = ref()
+    const props = defineProps(['outilid'])    
 
-        const debut = ref("")
-        const fin = ref("")
-        const message = ref()
-        const erreur = ref()
+    const outil = ref()
+    const debut = defineModel('debut')
+    const fin = defineModel('fin')
 
-        let router = useRouter();
-        onMounted(() => {
-            handleOutils()
-        });
+    const nom = defineModel('nom')
+    const prenom = defineModel('prenom')
+    const email = defineModel('email')
+
+    const resa = ref(0)
+    const checkoutid = ref()
+    const redirecturl = ref()
+
+    const message = ref()
+    const erreur = ref()
+
+    const affichepaiement = ref(false)
+
+    let router = useRouter();
+    onMounted(() => {
+        handleOutils()
+    });
 
 
-        const reserver = async () => {
+    const reserver = async () => {
 
-            let data = {"outil_id" : outils.value.id,
-                    "debut" :debut.value,
-                    "fin" :fin.value,
-                    "user_id" : user.value.id}
-            try {
-                const req = await request('post','/api/reservations',data)
-                if (req.data && req.data.status) {
-                    message.value = "Réservé"
-                    erreur.value=null
-                } else {
-                    erreur.value = req.data.message
-                    message.value = null
-                }
-            } catch(e) {
-                message.value = e.message
+        let data = {"outil_id" :outil.value.id,
+                    "nom" : nom.value,
+                    "prenom" : prenom.value,
+                    "email" : email.value,
+                    "debut" : debut.value,
+                    "fin"   : fin.value}
+        
+        
+        try {
+            const req = await request('post','/api/reservations',data)
+            if (req.data && req.data.status) {
+                resa.value = req.data.data
+                affichepaiement.value = true
+                erreur.value = null
+                message.value = "Article réservé"
+
+            } else {
+                erreur.value = req.data.message
+                message.value = null
+            }
+        } catch(e) {
+            erreur.value = e.message
+            message.value = null
+        }
+
+    }
+
+    const paiementValid = async () => {
+        try {
+            const req = await request('get', '/api/encaissement/'+resa.value.id)
+
+            if (req.status == 200) {
+                checkoutid.value = req.data.data.id
+                redirecturl.value = req.data.data.redirectUrl
+
+                message.value = "Paiement encours"
+                erreur.value = null
+
+                window.location.href = redirecturl.value
+
+            } else {
+                message.value = null
+                erreur.value = req.data.message
             }
 
+        } catch (e) {
+            erreur.value = e.message
+            message.value = null
         }
+        
+        affichepaiement.value = false
+    }
 
-        const handleOutils = async () => {
+
+    function annuler() {
+        router.push('/')
+    }
+
+    const handleOutils = async () => {
+        
+        const url = '/api/outils/'+props.outilid
+        //const url = '/api/outils/1'
+
+        try {
             
-            const url = '/api/outils/'+props.outilid
-            //const url = '/api/outils/1'
+            const req = await request('get', url)
+            outil.value = req.data
 
-            try {
-                
-                const req = await request('get', url)
-                outils.value = req.data
-
-            } catch (e) {
-                //await router.push('/login')
-            }
+        } catch (e) {
+            //await router.push('/login')
         }
+    }
 
-        function changedebut() {
-            const date = new Date(debut.value);
-            date.setDate(date.getDate() + 7);
-            fin.value = moment(date).format("YYYY-MM-DD")
-            
-        }
 
-        return {
-            outils,            
-            debut,
-            fin,
-            reserver,
-            message, erreur,
-            changedebut,
-        }
-    },
-}
+
 </script>

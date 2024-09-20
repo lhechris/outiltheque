@@ -1,57 +1,71 @@
 <template>
-    <page>
-        <profile user="user"></profile>
-        <cards>
-            <div v-for="(val, idx) in outils" :key="idx" >
-                <!--<outil :value="val" @onReserve="reserve(val)"></outil>-->
-                <outil :value="val" :link="'reservation/'+val.id"></outil>
-
+    <enveloppe>
+      <!--  <profile user="user"></profile>-->
+      <div>
+            <div class="mb-4 border-b border-gray-200 dark:border-gray-700">
+                <ul class="flex items-center flex-shrink-0 px-5 py-3 space-x-2text-gray-600" >
+                    <li v-for="(cat,idx) in categories" :key="idx" class="me-2" role="presentation" >
+                        <button :class="'inline-block p-4 border-b-2 rounded-t-lg'+'hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300'" 
+                                id="profile-tab" 
+                                data-tabs-target="#profile" 
+                                type="button" role="tab" 
+                                aria-controls="profile" 
+                                aria-selected="false"
+                                @click="selecttab(idx)"
+                        >{{cat.nom}}</button>
+                    </li>
+                </ul>
             </div>
-        </cards>
-    </page>
+            <div v-for="(cat,idx) in categories" :key="idx" >
+                <div :class="{ 'hidden' : selected[idx] }">
+                    <categorie :value="cat">
+                        <div v-for="(val, idx) in cat.outils" :key="idx" >
+                            <outil :value="val" :link="'reservation/'+val.id" linkname="Je réserve"></outil>
+                        </div>
+                    </categorie>
+                </div>
+            </div>
+        </div>
+    </enveloppe>
 
 </template>
-<script>
-import {ref, onMounted} from 'vue'
-import {useRouter} from "vue-router";
-import {request} from '../helper'
-import Page from './Page.vue';
-import Outil from '../components/template2/Outil.vue';
-import Cards from '../components/template2/Cards.vue';
-import Profile from './Profile.vue'
+<script setup>
+    import {ref, onMounted} from 'vue'
+    import {request} from '../helper'
+    import Enveloppe from '../components/Enveloppe.vue';
+    import Outil from '../components/Outil.vue';
+    import Categorie from '../components/Categorie.vue';
+    import Profile from './admin/Profile.vue'
 
-export default {
-    components: {
-        Outil, Page,Cards,Profile
-    },
-    setup() {
-        const outils = ref([])
-        const isLoading = ref()
+    const categories = ref([])
+    const isLoading = ref()
+    const selected = ref([])
+    const currentselection = ref(0)
 
-        let router = useRouter();
-        onMounted(() => {
-            handleOutils()
-        });
+    onMounted(() => {
+        handleCategories()
+    });
 
-        const handleOutils = async () => {
-            try {
-                const req = await request('get', '/api/outils')
-                outils.value = req.data.data
-            } catch (e) {
-                await router.push('/login')
+    const handleCategories = async () => {
+        try {
+            const req = await request('get', '/api/categoriesdetailed')
+            categories.value = req.data.data
+            selected.value = []
+            for (let cat in categories.value ) {
+                selected.value.push(true)
             }
-            isLoading.value = false
+            selected.value[currentselection.value]=false
+        } catch (e) {
+            //await router.push('/login')
         }
+        isLoading.value = false
+    }
 
-        const reserve = async(outil) => {
-            await router.push("/reservation/"+outil.id)
-        }
+    function selecttab(id) {
+        selected.value[currentselection.value] = true
+        selected.value[id] = false
+        currentselection.value=id
+    }
 
-        return {
-            outils,            
-            isLoading,
-            reserve,
-        }
-    },
-}
+
 </script>

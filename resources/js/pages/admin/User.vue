@@ -1,5 +1,5 @@
 <template>
-    <page>
+    <admin>
         <div v-if="user">
 
             <div class="mx-auto w-4/12 mt-10 p-4 ">
@@ -84,70 +84,55 @@
             </form>
         </div>
     </div>
-
-
-
-        </div>
-    </page>
+    </div>
+</admin>
 </template>
 
-<script>
-import {ref, onMounted,reactive} from 'vue'
-import {request} from '../helper'
-import Page from './Page.vue'
-import Profile from './Profile.vue'
+<script setup>
+    import {ref, onMounted,reactive} from 'vue'
+    import {request} from '../../helper'
+    import Admin from './Admin.vue'
 
-export default {
-    components: {
-        Page,Profile
-    },
-    setup() {
+    const user = ref()
+    const errors = ref();
+    const success = ref("");
+    const changermdp = ref(false)
 
-        const user = ref()
-        const errors = ref();
-        const success = ref("");
-        const changermdp = ref(false)
+    const handleSubmit = async(evt) => {
+        evt.preventDefault()
+        success.value=null
+        errors.value=null
 
-        const handleSubmit = async(evt) => {
-            evt.preventDefault()
-            success.value=null
-            errors.value=null
+        try {
+            const result = await request('put','/api/users/'+user.value.id, user.value);
+            success.value="Modifications ok"
+            user.value.password=null
+            user.value.oldpassword=null
+            changermdp.value=false
 
-            try {
-                const result = await request('put','/api/users/'+user.value.id, user.value);
-                success.value="Modifications ok"
-                user.value.password=null
-                user.value.oldpassword=null
-                changermdp.value=false
-
-            }catch (e) {
-                console.log(e)
-                if(e.response.data && e.response.data.message) {
-                    errors.value = e.response.data.message
-                }
-                
-            }            
-        }
-
-
-        onMounted(() => {
-            handleUser();
-        });
-
-        const handleUser = async () => {
-            try {
-                const req = await request('get', '/api/user')
-                user.value = req.data
-                console.log(req)
-
-            } catch (e) {
-
+        }catch (e) {
+            console.log(e)
+            if(e.response.data && e.response.data.message) {
+                errors.value = e.response.data.message
             }
-        }
+            
+        }            
+    }
 
-        return {
-            user,errors,success,changermdp, handleSubmit
+
+    onMounted(() => {
+        handleUser();
+    });
+
+    const handleUser = async () => {
+        try {
+            const req = await request('get', '/api/user')
+            user.value = req.data
+            console.log(req)
+
+        } catch (e) {
+
         }
-    },
-}
+    }
+
 </script>

@@ -11,9 +11,14 @@ class Reservations extends Model
 
     protected $fillable = [
         'outil_id',
-        'user_id',
+        'nom',
+        'prenom',
+        'email',        
         'debut',
-        'fin'
+        'fin',
+        'paiement_state',
+        'paiement_id'
+
     ];
 
     /**

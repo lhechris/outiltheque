@@ -4,25 +4,54 @@
         <div
             class="bg-white shadow-lg rounded-lg px-8 pt-6 pb-8 mb-2 flex flex-col"
         >
-            <h1 class="text-gray-600 py-5 font-bold text-3xl"> Connexion </h1>
-            <ul class="list-disc text-red-400" v-for="(value, index) in errors" :key="index" v-if="typeof errors === 'object'">
+            <h1 class="text-gray-600 py-5 font-bold text-3xl"> Créer un compte </h1>
+            <ul class="list-disc text-red-400" v-for="(value, index) in errors" :key="index">
                 <li>{{value[0]}}</li>
             </ul>
-            <p class="list-disc text-red-400" v-if="typeof errors === 'string'">{{errors}}</p>
-            <form method="post" @submit.prevent="handleLogin">
-            <div class="mb-4">
+            <form method="post" @submit="handleSubmit">
+            <div class="mb-4 mt-3">
                 <label
                     class="block text-grey-darker text-sm font-bold mb-2"
-                    for="username"
+                    for="fullname"
                 >
-                    Nom d'utilisateur
+                   Nom d'utilisateur (utilisé pour la connexion)
                 </label>
                 <input
                     class="shadow appearance-none border rounded w-full py-2 px-3 text-grey-darker"
-                    id="username"
+                    id="fullname"
                     type="text"
-                    v-model="form.username"
                     required
+                    v-model="form.username"
+                />
+            </div>
+            <div class="mb-4 mt-3">
+                <label
+                    class="block text-grey-darker text-sm font-bold mb-2"
+                    for="name"
+                >
+                   Nom complet
+                </label>
+                <input
+                    class="shadow appearance-none border rounded w-full py-2 px-3 text-grey-darker"
+                    id="name"
+                    type="text"
+                    required
+                    v-model="form.name"
+                />
+            </div>
+            <div class="mb-4">
+                <label
+                    class="block text-grey-darker text-sm font-bold mb-2"
+                    for="email"
+                >
+                    Adresse email
+                </label>
+                <input
+                    class="shadow appearance-none border rounded w-full py-2 px-3 text-grey-darker"
+                    type="email"
+                    id="email"
+                    required
+                    v-model="form.email"
                 />
             </div>
             <div class="mb-4">
@@ -36,8 +65,8 @@
                     class="shadow appearance-none border border-red rounded w-full py-2 px-3 text-grey-darker mb-3"
                     id="password"
                     type="password"
-                    v-model="form.password"
                     required
+                    v-model="form.password"
                 />
                 <!-- <p class="text-red text-xs italic">Please choose a password.</p> -->
             </div>
@@ -46,13 +75,13 @@
                     class="bg-blue-500 hover:bg-blue-900 text-white font-bold py-2 px-4 rounded"
                     type="submit"
                 >
-                    Se connecter
+                    S'enregistrer
                 </button>
                 <router-link
                     class="inline-block align-baseline font-bold text-sm text-blue hover:text-blue-darker"
-                    to="register"
+                    to="/"
                 >
-                    Créer un compte
+                    Se connecter
                 </router-link>
             </div>
             </form>
@@ -61,37 +90,37 @@
 </template>
 
 <script>
-import { reactive, ref } from 'vue';
+import {reactive, ref} from 'vue';
 import axios from 'axios';
 import {useRouter} from "vue-router";
+
 export default {
     setup() {
-        const errors = ref()
-        const router = useRouter();
+        const errors = ref();
+        let router = useRouter();
         const form = reactive({
+            name: '',
             email: '',
             password: '',
         })
-        const handleLogin = async () => {
+        const handleSubmit = async(evt) => {
+            evt.preventDefault()
             try {
-                const result = await axios.post('/api/auth/login', form)
+                const result = await axios.post('/api/auth/register', form);
                 if (result.status === 200 && result.data && result.data.token) {
                     localStorage.setItem('APP_DEMO_USER_TOKEN', result.data.token)
-                    await router.push('/')
+                    //await router.push('home')
                 }
-            } catch (e) {
-                if(e && e.response.data && e.response.data.errors) {
+            }catch (e) {
+                if(e.response.data && e.response.data.errors) {
                     errors.value = Object.values(e.response.data.errors)
-                } else {
-                    errors.value = e.response.data.message || ""
                 }
             }
         }
-
         return {
             form,
             errors,
-            handleLogin,
+            handleSubmit,
         }
     }
 }

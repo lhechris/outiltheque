@@ -51,11 +51,13 @@ export const upload_file = async (url, file) => {
 export function getmenus(role) {
     if (role == "admin") {
         return { "Accueil" : "/",
-                 "Editer" : "/editoutils",
-                 "Reservations" : "/reservations"}
+                 "Outils" : "/admin",
+                 "Reservations" : "/reservations",
+                 "Categories" : "/categories",
+                "Profile" : "/profile"}
     } else {
-        return { "Accueil" : "/",
-                 "Profil" : "/profil"
+        return { "Accueil" : "/"                 
                  }
     }
 }
+
