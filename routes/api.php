@@ -45,6 +45,7 @@ Route::apiResource('caracoutils', CaracoutilsController::class)->middleware('aut
 Route::get('helloasso', [HelloassoController::class,'index']);
 Route::get('encaissement/{resa}', [HelloassoController::class,'encaissement']);
 Route::get('checkpaiement/{resa}', [HelloassoController::class,'checkPaiement']);
+Route::put('cash/{resa}', [HelloassoController::class,'cash']);
 
 
 Route::post('/upload-file', [FileUpload::class, 'fileUpload'])->name('fileUpload')->middleware('auth:sanctum');

@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Mail\ConfirmResa;
 
 /*
 |--------------------------------------------------------------------------
@@ -12,6 +13,17 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
+
+Route::get('/testroute', function() {
+    \Log::info("ici");
+
+    // L'envoi de l'email est effectué en utilisant la méthode “to” sur la façade Mail
+    Mail::to('lhechris@gmail.com')->send(new ConfirmResa());
+
+    return "Putain con!";
+
+});
+
 
 Route::get('/{vue_capture?}', function() {
     return view('welcome');

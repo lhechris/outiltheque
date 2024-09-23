@@ -8,6 +8,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Http;
 
+use App\Mail\ConfirmResa;
+use Illuminate\Support\Facades\Mail;
+
+const PAIEMENT_STATE_APAYER = "A payer";
+const PAIEMENT_STATE_HA_ENCOURS = "helloasso en cours";
+const PAIEMENT_STATE_HA_PAYER = "Payé Helloasso";
+
 class HelloassoController extends Controller
 {
 
@@ -25,6 +32,7 @@ class HelloassoController extends Controller
     private $keyClientSecret = 'Testclient_secret';
     private $keyAccessToken = 'Testaccess_token';
     private $keyRefreshToken = 'Testrefresh_token'; 
+
 
     /**
      * Display a listing of the resource.
@@ -60,9 +68,9 @@ class HelloassoController extends Controller
             "totalAmount" => $resa->prix*100,
             "initialAmount" => $resa->prix*100,
             "itemName" => "Location outil ".$resa['nom'],
-            "backUrl" => "https://www.silouso/reservation/".$resa->id,
-            "errorUrl" => "https://www.silouso.fr/encaissementerror",
-            "returnUrl" => "https://www.silouso.fr/confirmation/".$resa->id,
+            "backUrl" => "https://outiltheque.labo-binette.fr/reservation/".$resa->id,
+            "errorUrl" => "https://outiltheque.labo-binette.fr/encaissementerror",
+            "returnUrl" => "https://outiltheque.labo-binette.fr/confirmation/".$resa->id,
             "containsDonation" => false,
             "payer"=> [
               "firstName"=> $resa->prenom,
@@ -83,7 +91,7 @@ class HelloassoController extends Controller
             \Log::info($haresp->status());
             \Log::info($haresp->body());
             //store status
-            $resa->paiement_state = "helloasso en cours";
+            $resa->paiement_state = PAIEMENT_STATE_HA_ENCOURS;
             $resa->paiement_id = $haresp->json()["id"];
             $resa->update();
 
@@ -95,6 +103,22 @@ class HelloassoController extends Controller
             \Log::info($haresp->body());
             return response()->json(['status' => false, 'data' => "Erreur communication helloasso"]);
         }
+    }
+
+
+    /**
+     * CAsh
+     *
+     * @param id l'identifiant de la reservation 
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function cash(Request $request, $id) : \Illuminate\Http\JsonResponse
+    {
+        $resa = Reservations::find($id);
+
+        $resa->paiement_state = PAIEMENT_STATE_APAYER;
+        $resa->update();
+        return response()->json(['status' => true, 'data' => $resa], 202);
     }
 
 
@@ -112,15 +136,26 @@ class HelloassoController extends Controller
         $data = Helloasso::where('nom','=',$this->keyAccessToken)->first();
         $accesstoken = $data->valeur;
 
-        $resa = Reservations::find($id);
+        $resa = Reservations::leftjoin("outils","reservations.outil_id","=","outils.id")
+                            ->select("reservations.*","outils.nom as nomoutil","outils.prix")
+                            ->where("reservations.id","=",$id)
+                            ->first();
+                            
+        if ($resa->paiement_state == PAIEMENT_STATE_APAYER) {
+            Mail::to($resa->email)->send(new ConfirmResa($resa));
+            return response()->json(['status' => true, 'data' => $resa]);            
+        }
+
 
         $haresp = Http::withToken($accesstoken)->get($this->encaissementurl."/".$resa->paiement_id);
         
         if ($haresp->status() == 200) {
             \Log::info($haresp->status());
             \Log::info($haresp->body());
-            $resa->paiement_state = "Payé Helloasso";
+            $resa->paiement_state = PAIEMENT_STATE_HA_PAYER;
             $resa->update();
+            //Envoi du mail
+            Mail::to($resa->email)->send(new ConfirmResa($resa));
             return response()->json(['status' => true, 'data' => $resa]);
         
         } else {

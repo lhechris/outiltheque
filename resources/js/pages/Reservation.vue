@@ -4,7 +4,7 @@
             <h1 >Réservation</h1>
 
             <div v-if="affichepaiement" >
-                <paiement :resa="resa" @onValid="paiementValid"></paiement>
+                <paiement :resa="resa" @onHA="paiementHA" @onCash="paiementCash"></paiement>
             </div>
             <div v-else>
                 <div v-if="outil" class="flex flex-col gap-4">
@@ -98,7 +98,7 @@
 
     }
 
-    const paiementValid = async () => {
+    const paiementHA = async () => {
         try {
             const req = await request('get', '/api/encaissement/'+resa.value.id)
 
@@ -112,6 +112,28 @@
                 window.location.href = redirecturl.value
 
             } else {
+                message.value = null
+                erreur.value = req.data.message
+            }
+
+        } catch (e) {
+            erreur.value = e.message
+            message.value = null
+        }
+        
+        affichepaiement.value = false
+    }
+
+    const paiementCash = async () => {
+        try {
+            const req = await request('put', '/api/cash/'+resa.value.id)
+
+            if (req.status == 202) {
+                message.value = "Paiement à la livraison"
+                erreur.value = null
+                router.push("/confirmation/"+resa.value.id)
+
+             } else {
                 message.value = null
                 erreur.value = req.data.message
             }

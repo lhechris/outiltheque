@@ -77,9 +77,9 @@
     onMounted(() => {
         debut.value = mindebut.value
         fin.value = minfin.value
-        nom.value = "Mouse"
-        prenom.value = "Mickey"
-        email.value = "lhechris@gmail.com"
+        nom.value = ""
+        prenom.value = ""
+        email.value = ""
     });
 
     function changedebut() {
