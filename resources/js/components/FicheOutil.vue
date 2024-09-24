@@ -1,5 +1,5 @@
 <template>
-    <div class="flex flex-col gap-4 container mx-auto max-w-4xl">
+    <div class="flex flex-col gap-4 ">
         <div class="flex flex-row gap-4">
             <div class="w-32 h-32">
                 <img src="/storage/app/images/LB_logo.png" />

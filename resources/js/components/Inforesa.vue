@@ -1,30 +1,26 @@
 <template>
-    <div v-if="outil" class="flex flex-col justify-start gap-4">     
+    <div v-if="outil" class="flex flex-col justify-start gap-4 max-w-sm sm:max-xl md:max-w-2xl lg:max-w-4xl">     
         <FicheOutil :value="props.outil" />
         <div class="flex flex-row gap-4 py-4" >
             <div>
-                <label for="debut" class="mb-1 block text-sm font-medium text-gray-700">Date de début</label>
-                <input  type="date" 
-                        id="debut" 
-                        v-model="debut" 
-                        :min="mindebut"
-                        step="7"
-                        class="block border rounded-md border-gray-300 shadow-sm focus:border-blue-400 focus:ring focus:ring-blue-200 focus:ring-opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500" 
-                        placeholder="date de début" 
-                        @change="changedebut()"/>
+                <label for="debut" class="mb-1 block text-sm font-medium text-gray-700">Date de récupération</label>
+                <select id="selectdebut" 
+                        class="px-4 py-2 rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 disabled:cursor-not-allowed bg-blue-50"
+                        v-model="truc"
+                        @change="changedebut"
+                        >
+                            <option v-for="l in ldebut" :value="l">{{ moment(l).format('DD/MM') }}</option>
+                        </select>
+
             </div>
             <div>
-                <label for="fin" class="mb-1 block text-sm font-medium text-gray-700">Date de fin ({{ outil.duree }}j maximum)</label>
-                <input  type="date" 
-                        id="fin" 
-                        v-model="fin" 
-                        :min="minfin"
-                        step="7"
-                        class="block border rounded-md border-gray-300 shadow-sm focus:border-blue-400 focus:ring focus:ring-blue-200 focus:ring-opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500" 
-                        placeholder="Date de fin" />
+                <label for="fin" class="mb-1 block text-sm font-medium text-gray-700">Date de retour </label>
+                <label  
+                        class="px-4 py-2 block border rounded-md border-gray-300 shadow-sm focus:border-blue-400 focus:ring focus:ring-blue-200 focus:ring-opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500" 
+                        >{{ moment(fin).format('DD/MM') }}</label>
             </div>
         </div>
-        <div class="flex flex-row gap-4 py-4" >
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 py-4" >
             <div>
                 <label for="nom" class="mb-1 block text-sm font-medium text-gray-700">Nom</label>
                 <input  type="text" 
@@ -62,8 +58,15 @@
 
     let dec=0
     if (moment().day() >=3 ) { dec = 7}
-    const mindebut = ref(moment().startOf('isoweek').add(3+dec,'days').format("YYYY-MM-DD"))
+    let mindebut = moment().startOf('isoweek').add(3+dec,'days')
     const minfin = ref(moment().startOf('isoweek').add(9+dec,'days').format("YYYY-MM-DD"))
+
+    let ld = [mindebut.format("YYYY-MM-DD")]
+    
+    for (let i=0;i<8;i++) {
+        ld.push(mindebut.add(7,'days').format("YYYY-MM-DD"))
+    }
+    const ldebut = ref(ld)
 
     const debut = defineModel('debut')
     const fin = defineModel('fin')
@@ -74,8 +77,10 @@
 
     const props = defineProps(['outil'])
 
+    const truc = ref(ldebut.value[0])
+
     onMounted(() => {
-        debut.value = mindebut.value
+        debut.value = ldebut.value[0]
         fin.value = minfin.value
         nom.value = ""
         prenom.value = ""
@@ -83,12 +88,10 @@
     });
 
     function changedebut() {
-        console.log(debut.value)
-        const date = new Date(debut.value);
-        console.log(date)
-        date.setDate(date.getDate() + 7);
-        console.log(date)
-        fin.value = moment(date).format("YYYY-MM-DD")
+        console.log(truc.value)
+        debut.value = truc.value
+        fin.value = moment(truc.value).add(6, 'days').format("YYYY-MM-DD")
+
         console.log(fin.value)
         
     }
