@@ -38,6 +38,8 @@ Route::delete('outils/{outil}', [OutilsController::class,'destroy'])->middleware
 Route::apiResource('reservations', ReservationController::class);
 
 Route::apiResource('adminreservations', AdminReservations::class)->middleware('auth:sanctum','role:admin');
+Route::get('historique',[AdminReservations::class,'historique'])->middleware('auth:sanctum','role:admin');
+
 Route::apiResource('categories', CategoriesController::class)->middleware('auth:sanctum');
 Route::get('categoriesdetailed', [CategoriesController::class,'indexchilds']);
 Route::apiResource('caracoutils', CaracoutilsController::class)->middleware('auth:sanctum');

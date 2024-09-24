@@ -124,6 +124,8 @@ class AdminReservations extends Controller
             $data->outil_id = $request->outil_id;
             $data->debut = $request->debut;
             $data->fin = $request->fin;
+            $data->paiement_state = $request->paiement_state;
+            $data->commentaire = $request->commentaire;            
             $data->update();
             return response()->json(['status' => true, 'data' => $data], 202);
         }
@@ -146,4 +148,20 @@ class AdminReservations extends Controller
             }
             return response()->json(['status' => true, 'message' => 'reservation supprimée']);
         }
+
+
+        /**
+         * Display the specified resource.
+         *
+         * @return \Illuminate\Http\JsonResponse
+         */
+        public function historique(): \Illuminate\Http\JsonResponse
+        {
+            $data = JournalReservations::leftjoin("outils","journal_reservations.outil_id","=","outils.id")
+            ->select("journal_reservations.*","outils.nom as nomoutil")
+            ->get();
+
+            return  response()->json(['status' => true, 'data' => $data]);
+        }
+
 }

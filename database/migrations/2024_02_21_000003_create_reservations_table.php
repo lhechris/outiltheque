@@ -21,8 +21,9 @@ return new class extends Migration
             $table->unsignedBigInteger('outil_id');
             $table->dateTime('debut');
             $table->dateTime('fin')->nullable();
-            $table->string("paiement_state");
-            $table->unsignedBigInteger('paiement_id');
+            $table->string("paiement_state")->nullable();
+            $table->unsignedBigInteger('paiement_id')->nullable();
+            $table->string("commentaire")->nullable();
             $table->timestamps();
         });
     }

@@ -26,15 +26,15 @@
                 <input  type="text" 
                         id="nom" 
                         v-model="nom" 
-                        class="block border rounded-md border-gray-300 shadow-sm focus:border-blue-400 focus:ring focus:ring-blue-200 focus:ring-opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500" 
+                        class="block border rounded-md border-gray-300 shadow-sm focus:border-blue-400 pl-1 focus:ring focus:ring-blue-200 focus:ring-opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500" 
                         placeholder="Votre Nom" />
             </div>
             <div>
                 <label for="prenom" class="mb-1 block text-sm font-medium text-gray-700">Prénom</label>
                 <input  type="text" 
-                        id="prenom" 
+                        id="email" 
                         v-model="prenom" 
-                        class="block border rounded-md border-gray-300 shadow-sm focus:border-blue-400 focus:ring focus:ring-blue-200 focus:ring-opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500" 
+                        class="block border rounded-md border-gray-300 shadow-sm focus:border-blue-400 pl-1 focus:ring focus:ring-blue-200 focus:ring-opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500" 
                         placeholder="Votre Prénom" />
             </div>
             <div>
@@ -42,9 +42,9 @@
                 <input  type="email" 
                         id="email" 
                         v-model="email" 
-                        class="block border rounded-md border-gray-300 shadow-sm focus:border-blue-400 focus:ring focus:ring-blue-200 focus:ring-opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500" 
+                        class="block border rounded-md border-gray-300 shadow-sm focus:border-blue-400 pl-1 focus:ring focus:ring-blue-200 focus:ring-opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500" 
                         placeholder="Votre Email" />
-            </div>
+            </div>       
         </div>
     </div>
     <div v-else>Rien</div>

@@ -16,7 +16,9 @@ class JournalReservations extends Model
         'email',
         'commentaire',
         'debut',
-        'fin'
+        'fin',
+        'paiement_state',
+        'paiement_id'
     ];
 
     /**

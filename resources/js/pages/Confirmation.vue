@@ -11,6 +11,9 @@
                             @click="back"
                     >OK</button>
             </div>
+            <div v-else>
+                <img src="/storage/app/images/icons8-iphone-spinner.gif" />
+            </div>
         </div>
     </enveloppe>
 </template>

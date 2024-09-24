@@ -17,7 +17,8 @@ class Reservations extends Model
         'debut',
         'fin',
         'paiement_state',
-        'paiement_id'
+        'paiement_id',
+        'commentaire'
 
     ];
 

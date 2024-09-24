@@ -1,7 +1,7 @@
 <template>
     <nav class="fixed top-0 left-0 z-20 w-full border-b border-gray-200 bg-white py-2.5 px-6 sm:px-4">
     <div class="container mx-auto flex max-w-6xl flex-wrap items-center justify-between">
-      <a href="#" class="flex items-center">
+      <a href="#" class="hidden md:flex items-center md:w-auto">
         <img class="max-h-12" src="/storage/app/images/LB_logo_2.png" />
   
         <span class="self-center whitespace-nowrap text-xl font-semibold p-2">Outilthèque</span>
@@ -20,10 +20,10 @@
           <svg class="h-6 w-6" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"></path></svg>
         </button>-->
       </div>
-      <div class="hidden w-full items-center justify-between md:order-1 md:flex md:w-auto" id="navbar-sticky">
-        <ul class="mt-4 flex flex-col rounded-lg border border-gray-100 bg-gray-50 p-4 md:mt-0 md:flex-row md:space-x-8 md:border-0 md:bg-white md:text-sm md:font-medium">
+      <div class="w-full items-center justify-between md:order-1 md:flex md:w-auto" id="navbar-sticky">
+        <ul class="mt-4 flex flex-row rounded-lg border border-gray-100 bg-gray-50 p-4 md:mt-0 md:flex-row md:space-x-8 md:border-0 md:bg-white md:text-sm md:font-medium">
           <li v-for="(l,k) in menus" :index="k" >
-            <router-link :to="l" class="block rounded bg-blue-700 py-2 pl-3 pr-4 text-white md:bg-transparent md:p-0 md:text-blue-700" aria-current="page">{{k}}</router-link>
+            <router-link :to="l" class="block rounded pl-1 pr-4 md:bg-transparent md:p-0 text-blue-700" aria-current="page">{{k}}</router-link>
           </li>
         </ul>
       </div>
@@ -32,14 +32,12 @@
 </template>
 
 <script setup>
-  //import {useRouter} from "vue-router";
+  const emits = defineEmits(['logout'])
 
   const props = defineProps(["user","menus","logout"])
-  //let router = useRouter();
 
   const handleLogout = () => {
-        localStorage.removeItem('APP_DEMO_USER_TOKEN')
-        //router.push('/login')
+        emits('logout')
   }
 
 </script>
