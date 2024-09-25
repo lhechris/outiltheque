@@ -1,7 +1,7 @@
 <template>
     <div class="flex flex-col gap-4 ">
         <div class="flex flex-row gap-4">
-            <div class="w-32 h-32">
+            <div class="size-32">
                 <img src="/storage/app/images/LB_logo.png" />
             </div>
             <div class="w-full"> 
@@ -11,9 +11,9 @@
             </div>
         </div>
         <div class="grid grid-cols-2 gap-4">
-            <img class="w-24" :src="value.file_path" alt="Photo manquante" />
+            <img class="h-60" :src="value.file_path" alt="" />
             <div class="flex flex-col">
-                <div class="max-w-32"><img :src="value.file2_path" alt="Photo manquante" /></div>
+                <div><img class="h-52" :src="value.file2_path" alt="" /></div>
                 <div v-for="(c,idx) in value.caracteristique" >
                     <div :class="{'bg-[#ebe5d1]' : (idx+1)%2}">{{ c.nom }} : {{ c.valeur }}</div>
                 </div>

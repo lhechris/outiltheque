@@ -69,6 +69,12 @@ class OutilsController extends Controller
         }
         $req = $request->all();        
         $data = Outils::create($req);
+
+        foreach ($request->caracteristique as $c) {
+            $c['outil_id'] = $data->id;
+            Caracoutils::create($c);
+        }
+
         return response()->json(['status' => true, 'data' => $data], 201);
     }
 

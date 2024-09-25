@@ -101,6 +101,8 @@
             }
             outiltoedit.value = req.data.data
             message.value = "Outil sauvée"
+            await router.push("/editoutil/"+outiltoedit.value.id)
+
         } catch (e) {
             //await router.push('/')
         }

@@ -97,7 +97,7 @@ import Admin from './Admin.vue'
 
         const payer = async (resa,index) => {
             try {
-                resa.paiement_state="Payer"
+                resa.paiement_state="Payé"
                 const req = await request('put', `/api/adminreservations/${resa.id}`,resa)
                 reservations.value[index] = resa
 

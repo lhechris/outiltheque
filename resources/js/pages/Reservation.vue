@@ -23,13 +23,13 @@
                             class="rounded-lg border border-blue-500 bg-blue-500 px-5 py-2.5 text-center text-sm font-medium text-white shadow-sm transition-all hover:border-blue-700 hover:bg-blue-700 focus:ring focus:ring-blue-200 disabled:cursor-not-allowed disabled:border-blue-300 disabled:bg-blue-300"
                             @click="annuler"
                         >Annuler</button>
+                        <div>
+                            <p v-if="message" class="rounded-md bg-green-50 p-4 text-sm text-green-500">{{ message }}</p>
+                            <p v-if="erreur" class="rounded-md bg-red-50 p-4 text-sm text-red-500">{{ erreur }}</p>
+                        </div>
                     </div>
-
-
                 </div>
             </div>
-            <p v-if="message" class="rounded-md bg-green-50 p-4 text-sm text-green-500">{{ message }}</p>
-            <p v-if="erreur" class="rounded-md bg-red-50 p-4 text-sm text-red-500">{{ erreur }}</p>
             
         </div>
     </enveloppe>
@@ -38,7 +38,7 @@
 <script setup>
     import {ref, onMounted} from 'vue'
     import {useRouter} from "vue-router";
-    import {request} from '../helper'
+    import {request,validateEmail} from '../helper'
 
     import Enveloppe from '../components/Enveloppe.vue'
     import InfoResa from '../components/Inforesa.vue'
@@ -71,6 +71,23 @@
 
     const reserver = async () => {
 
+        message.value = null
+        erreur.value = null
+        //Verification des champs
+        if (! validateEmail(email.value)) {
+            erreur.value = "Email mal renseigné"
+            return;
+        }
+        if (nom.value) {
+            erreur.value = "Nom obligatoire"
+            return;
+        }
+        if (prenom.value) {
+            erreur.value = "Prénom obligatoire"
+            return;
+        }
+        
+        
         let data = {"outil_id" :outil.value.id,
                     "nom" : nom.value,
                     "prenom" : prenom.value,
