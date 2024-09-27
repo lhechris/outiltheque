@@ -18,6 +18,7 @@ class JournalReservations extends Model
         'debut',
         'fin',
         'paiement_state',
+        'state',
         'paiement_id'
     ];
 

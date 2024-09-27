@@ -15,6 +15,14 @@
         Payer plus tard
      </button>
 
+     <button type="button" 
+                class="bg-red-500 hover:bg-blue-900 text-white font-bold py-2 px-4 rounded"
+                @click="handleCancel"
+        >
+        Annuler la réservation
+     </button>
+
+
 
     </div>
 </template>
@@ -22,12 +30,15 @@
 <script setup>
 
     const props = defineProps(['resa'])
-    const emits = defineEmits(['onHA', 'onCash'])
+    const emits = defineEmits(['onHA', 'onCash','onCancel'])
 
     function handleCash() {
         emits('onCash')
     }
     function handleHA() {
         emits('onHA')
+    }
+    function handleCancel() {
+        emits('onCancel')
     }
 </script>

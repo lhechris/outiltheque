@@ -4,7 +4,7 @@
             <h1 >Réservation</h1>
 
             <div v-if="affichepaiement" >
-                <paiement :resa="resa" @onHA="paiementHA" @onCash="paiementCash"></paiement>
+                <paiement :resa="resa" @onHA="paiementHA" @onCash="paiementCash" @onCancel="paiementCancel"></paiement>
             </div>
             <div v-else>
                 <div v-if="outil" class="flex flex-col gap-4">
@@ -78,11 +78,11 @@
             erreur.value = "Email mal renseigné"
             return;
         }
-        if (nom.value) {
+        if (!nom.value) {
             erreur.value = "Nom obligatoire"
             return;
         }
-        if (prenom.value) {
+        if (!prenom.value) {
             erreur.value = "Prénom obligatoire"
             return;
         }
@@ -162,6 +162,27 @@
         
         affichepaiement.value = false
     }
+
+    const paiementCancel = async () => {
+        try {
+            const req = await request('delete', '/api/reservations/'+resa.value.id)
+
+            if (req.status == 200) {
+                router.push("/")
+
+             } else {
+                message.value = null
+                erreur.value = req.data.message
+            }
+
+        } catch (e) {
+            erreur.value = e.message
+            message.value = null
+        }
+        
+        affichepaiement.value = false
+    }
+
 
 
     function annuler() {

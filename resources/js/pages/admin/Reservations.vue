@@ -2,17 +2,18 @@
 
     <admin>
 
-        <div class="grid grid-row w-full">
-            <table>
+        <div class="grid grid-row w-full">            
+            <table v-if="reservations.length>0">
                 <tr align="left">
-                    <th>Outil</th><th>Début</th><th>Fin</th><th>Nom</th><th>Paiement</th><th>Commentaire</th><th></th><th></th>
+                    <th>Outil</th><th>Début</th><th>Fin</th><th>Nom</th><th>Paiement</th><th>Statut</th><th>Commentaire</th><th></th><th></th>
                 </tr>
-                <tr v-for="resa in reservations" class="my-2 " >
+                <tr v-for="resa in reservations" class="my-2" >
                     <td class="px-2">{{ resa.nomoutil }} </td>
                     <td><input type="date" v-model="resa.debut" class="border rounded-md"/></td>
                     <td><input type="date" v-model="resa.fin" class="border rounded-md"/></td>
                     <td>{{ resa.prenom }} {{ resa.nom }}</td>
                     <td>{{ resa.paiement_state }}</td>
+                    <td>{{ resa.state }}</td>
                     <td>
                         <input type="text"  
                                v-model=resa.commentaire
@@ -31,21 +32,25 @@
                     </td>       
                 </tr>
             </table>
+            <div v-else class="mx-20 max-w-lg rounded-md bg-green-50 p-4 text-sm text-green-500">Pas de réservation en cours</div>
+            
             <div>
                 <h1 class="w-full text-center bg-yellow-200 my-5">Historique</h1>
-                <table>
-                <tr class="text-left">
-                    <th>Outil</th><th>Début</th><th>Fin</th><th>Nom</th><th>Paiement</th><th>Commentaire</th>
-                </tr>
-                <tr v-for="resa in historiques" class="my-2 " >
-                    <td class="px-2">{{ resa.nomoutil }} </td>
-                    <td class="px-2"> {{resa.debut }}</td>
-                    <td class="px-2">{{resa.fin}}</td>
-                    <td class="px-2">{{ resa.prenom }} {{ resa.nom }}</td>
-                    <td class="px-2">{{ resa.paiement_state }}</td>
-                    <td class="px-2">{{resa.commentaire}}</td>  
-                </tr>
-            </table>
+                <table v-if="historiques.length>0">
+                    <tr class="text-left">
+                        <th>Outil</th><th>Début</th><th>Fin</th><th>Nom</th><th>Paiement</th><th>Statut</th><th>Commentaire</th>
+                    </tr>
+                    <tr v-for="resa in historiques" class="my-2 " >
+                        <td class="px-2">{{ resa.nomoutil }} </td>
+                        <td class="px-2"> {{resa.debut }}</td>
+                        <td class="px-2">{{resa.fin}}</td>
+                        <td class="px-2">{{ resa.prenom }} {{ resa.nom }}</td>
+                        <td class="px-2">{{ resa.paiement_state }}</td>
+                        <td class="px-2">{{ resa.state }}</td>
+                        <td class="px-2">{{resa.commentaire}}</td>  
+                    </tr>
+                </table>
+                <div v-else class="mx-20 max-w-lg rounded-md bg-green-50 p-4 text-sm text-green-500">Aucun historique de réservations</div>
             </div>
         </div>
 
@@ -70,6 +75,7 @@ import Admin from './Admin.vue'
             try {
                 const req = await request('get', '/api/adminreservations')
                 reservations.value = req.data.data
+                console.log(reservations.value.length)
             } catch (e) {
                 console.log(e)
             }
@@ -87,7 +93,8 @@ import Admin from './Admin.vue'
         const valideretour = async (resa,index) => {
             try {
                 const req = await request('delete', `/api/adminreservations/${resa.id}`)
-                reservations.value.splice(index, 1)
+                console.log(`index ${index}`)
+                handleResas()
                 handleHisto()
             } catch (e) {
 

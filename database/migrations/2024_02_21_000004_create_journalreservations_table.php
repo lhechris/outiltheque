@@ -23,6 +23,7 @@ return new class extends Migration
             $table->dateTime('fin')->nullable();
             $table->string("commentaire")->nullable();
             $table->unsignedBigInteger('paiement_id')->nullable();
+            $table->string("state")->nullable();
             $table->string("paiement_state")->nullable();
             $table->timestamps();
         });

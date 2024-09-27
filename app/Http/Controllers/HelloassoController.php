@@ -11,10 +11,6 @@ use Illuminate\Support\Facades\Http;
 use App\Mail\ConfirmResa;
 use Illuminate\Support\Facades\Mail;
 
-const PAIEMENT_STATE_APAYER = "A payer";
-const PAIEMENT_STATE_HA_ENCOURS = "helloasso en cours";
-const PAIEMENT_STATE_HA_PAYER = "Payé Helloasso";
-
 class HelloassoController extends Controller
 {
 
@@ -91,7 +87,8 @@ class HelloassoController extends Controller
             \Log::info($haresp->status());
             \Log::info($haresp->body());
             //store status
-            $resa->paiement_state = PAIEMENT_STATE_HA_ENCOURS;
+            $resa->paiement_state = Reservations::PAIEMENT_STATE_HA_ENCOURS;
+            $resa->state = Reservations::STATE_PAIEMENT;
             $resa->paiement_id = $haresp->json()["id"];
             $resa->update();
 
@@ -116,7 +113,8 @@ class HelloassoController extends Controller
     {
         $resa = Reservations::find($id);
 
-        $resa->paiement_state = PAIEMENT_STATE_APAYER;
+        $resa->paiement_state = Reservations::PAIEMENT_STATE_A_PAYER;
+        $resa->state = Reservations::STATE_PAIEMENT;
         $resa->update();
         return response()->json(['status' => true, 'data' => $resa], 202);
     }
@@ -141,8 +139,12 @@ class HelloassoController extends Controller
                             ->where("reservations.id","=",$id)
                             ->first();
                             
-        if ($resa->paiement_state == PAIEMENT_STATE_APAYER) {
-            Mail::to($resa->email)->send(new ConfirmResa($resa));
+        if ($resa->paiement_state == Reservations::PAIEMENT_STATE_A_PAYER) {
+            if ($resa->state==Reservations::STATE_PAIEMENT) {
+                Mail::to($resa->email)->send(new ConfirmResa($resa));
+                $resa->state=Reservations::STATE_CONFIRME;
+                $resa->update();
+            }
             return response()->json(['status' => true, 'data' => $resa]);            
         }
 
@@ -150,12 +152,14 @@ class HelloassoController extends Controller
         $haresp = Http::withToken($accesstoken)->get($this->encaissementurl."/".$resa->paiement_id);
         
         if ($haresp->status() == 200) {
-            \Log::info($haresp->status());
             \Log::info($haresp->body());
-            $resa->paiement_state = PAIEMENT_STATE_HA_PAYER;
-            $resa->update();
-            //Envoi du mail
-            Mail::to($resa->email)->send(new ConfirmResa($resa));
+            if ($resa->state==Reservations::STATE_PAIEMENT) {
+                $resa->paiement_state = Reservations::PAIEMENT_STATE_HA_PAYE;
+                $resa->state=Reservations::STATE_CONFIRME;
+                $resa->update();
+                //Envoi du mail
+                Mail::to($resa->email)->send(new ConfirmResa($resa));
+            }
             return response()->json(['status' => true, 'data' => $resa]);
         
         } else {
@@ -186,14 +190,8 @@ class HelloassoController extends Controller
      */
     public function store(Request $request): \Illuminate\Http\JsonResponse
     {
-        $data = Helloasso::where('nom', $request->nom)
-                            ->where('outil_id',$request->outil_id);
-        if ($data->first()) {
-            return response()->json(['status' => false, 'message' => 'Already exist']);
-        }
-        $req = $request->all();        
-        $data = Helloasso::create($req);
-        return response()->json(['status' => true, 'data' => $data], 201);
+       
+        return response()->json(['status' => true, 'data' => "Not implemented"], 201);
     }
 
     /**
@@ -204,9 +202,7 @@ class HelloassoController extends Controller
      */
     public function show($id): \Illuminate\Http\JsonResponse
     {
-        $response = Helloasso::where("outil_id",'=',$id);
-
-        return response()->json($response->first(), 200);
+        return response()->json("Not implemented", 200);
     }
 
     /**
@@ -229,25 +225,7 @@ class HelloassoController extends Controller
      */
     public function update(Request $request, $id): \Illuminate\Http\JsonResponse
     {
-        $validateUser = Validator::make($request->all(),
-            [
-                'description' => 'required',
-                'nom' => 'required'
-            ]);
-
-        if ($validateUser->fails()) {
-            return response()->json([
-                'status' => false,
-                'message' => 'validation error',
-                'errors' => $validateUser->errors()
-            ], 401);
-        }
-
-        $data = Helloasso::find($id);
-        $data->nom = $request->nom;
-        $data->description = $request->description;
-        $data->update();
-        return response()->json(['status' => true, 'data' => $data], 202);
+        return response()->json(['status' => true, 'data' => "Not implemented"], 202);
     }
 
     /**
@@ -259,9 +237,7 @@ class HelloassoController extends Controller
      */
     public function destroy(int $id): \Illuminate\Http\JsonResponse
     {
-        throw_if(!$id, 'Id is missing');
-        Helloasso::findOrFail($id)->delete();
-        return response()->json(['status' => true, 'message' => 'categorie deleted']);
+        return response()->json(['status' => true, 'message' => 'Not implemented'],200);
     }
 
 

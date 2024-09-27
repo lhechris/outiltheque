@@ -86,7 +86,8 @@ class ReservationController extends Controller
             }
 
             $req = $request->all();
-            $req['paiement_state'] = 'Non payé';
+            $req['paiement_state'] = Reservations::PAIEMENT_STATE_NON_PAYE;
+            $req['state'] = Reservations::STATE_RESERVE;
             $data = Reservations::create($req);
             return response()->json(['status' => true, 'data' => $data], 201);
         }
@@ -167,10 +168,13 @@ class ReservationController extends Controller
         public function destroy(int $id): \Illuminate\Http\JsonResponse
         {
             throw_if(!$id, 'reservation Id is missing');
-            $data = Reservations::find($id);
+            $data = Reservations::findOrFail($id);
             //Reservations::findOrFail($id)->delete();
             if ($data) {
-                JournalReservations::create($data->toJSon());
+                if ($data->state == Reservations::STATE_RESERVE) {
+                    $data->state = Reservations::STATE_ANNULE;
+                }
+                JournalReservations::create($data->toArray());
                 $data->delete();
             }
             return response()->json(['status' => true, 'message' => 'reservation supprimée']);
