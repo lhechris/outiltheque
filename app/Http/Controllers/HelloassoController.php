@@ -65,7 +65,7 @@ class HelloassoController extends Controller
             "initialAmount" => $resa->prix*100,
             "itemName" => "Location outil ".$resa['nom'],
             "backUrl" => "https://outiltheque.labo-binette.fr/reservation/".$resa->id,
-            "errorUrl" => "https://outiltheque.labo-binette.fr/encaissementerror",
+            "errorUrl" => "https://outiltheque.labo-binette.fr/encaissementerreur".$resa->id,
             "returnUrl" => "https://outiltheque.labo-binette.fr/confirmation/".$resa->id,
             "containsDonation" => false,
             "payer"=> [

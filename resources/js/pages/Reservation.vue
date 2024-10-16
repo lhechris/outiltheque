@@ -4,7 +4,12 @@
             <h1 >Réservation</h1>
 
             <div v-if="affichepaiement" >
-                <paiement :resa="resa" @onHA="paiementHA" @onCash="paiementCash" @onCancel="paiementCancel"></paiement>
+                <paiement 
+                    :resa="resa" 
+                    @onHA="pHA" 
+                    @onCash="pCash" 
+                    @onCancel="pCancel">
+                </paiement>
             </div>
             <div v-else>
                 <div v-if="outil" class="flex flex-col gap-4">
@@ -39,11 +44,12 @@
     import {ref, onMounted} from 'vue'
     import {useRouter} from "vue-router";
     import {request,validateEmail} from '../helper'
+    import {paiementHA, paiementCash,paiementCancel} from '../paiement'
 
     import Enveloppe from '../components/Enveloppe.vue'
     import InfoResa from '../components/Inforesa.vue'
     import Paiement from '../components/Paiement.vue'
-
+ 
     const props = defineProps(['outilid'])    
 
     const outil = ref()
@@ -55,8 +61,6 @@
     const email = defineModel('email')
 
     const resa = ref(0)
-    const checkoutid = ref()
-    const redirecturl = ref()
 
     const message = ref()
     const erreur = ref()
@@ -115,75 +119,19 @@
 
     }
 
-    const paiementHA = async () => {
-        try {
-            const req = await request('get', '/api/encaissement/'+resa.value.id)
-
-            if (req.status == 200) {
-                checkoutid.value = req.data.data.id
-                redirecturl.value = req.data.data.redirectUrl
-
-                message.value = "Paiement encours"
-                erreur.value = null
-
-                window.location.href = redirecturl.value
-
-            } else {
-                message.value = null
-                erreur.value = req.data.message
-            }
-
-        } catch (e) {
-            erreur.value = e.message
-            message.value = null
-        }
-        
+    function pHA() {
+        paiementHA(resa.value.id,message.id,erreur.value)
         affichepaiement.value = false
     }
-
-    const paiementCash = async () => {
-        try {
-            const req = await request('put', '/api/cash/'+resa.value.id)
-
-            if (req.status == 202) {
-                message.value = "Paiement à la livraison"
-                erreur.value = null
-                router.push("/confirmation/"+resa.value.id)
-
-             } else {
-                message.value = null
-                erreur.value = req.data.message
-            }
-
-        } catch (e) {
-            erreur.value = e.message
-            message.value = null
-        }
-        
+    function pCash() {
+        paiementCash(resa.value.id,message.id,erreur.value)
         affichepaiement.value = false
     }
-
-    const paiementCancel = async () => {
-        try {
-            const req = await request('delete', '/api/reservations/'+resa.value.id)
-
-            if (req.status == 200) {
-                router.push("/")
-
-             } else {
-                message.value = null
-                erreur.value = req.data.message
-            }
-
-        } catch (e) {
-            erreur.value = e.message
-            message.value = null
-        }
-        
+    const pCancel = async () => {
+        await paiementCancel(resa.value.id,message.id,erreur.value)
         affichepaiement.value = false
+        router.push("/")
     }
-
-
 
     function annuler() {
         router.push('/')

@@ -22,7 +22,13 @@ const router = createRouter({
             component: () => import('./pages/Confirmation.vue'),
             props: true
         },
-
+        {
+            // path: '/confirmation/:resaid/:checkoutIntentId/:code/:orderId',
+             path: '/encaissementerreur/:resaid',
+             component: () => import('./pages/EncaissementErreur.vue'),
+             props: true
+         },
+ 
 
         /** ADMIN */
         {

@@ -93,7 +93,6 @@ import Admin from './Admin.vue'
         const valideretour = async (resa,index) => {
             try {
                 const req = await request('delete', `/api/adminreservations/${resa.id}`)
-                console.log(`index ${index}`)
                 handleResas()
                 handleHisto()
             } catch (e) {
