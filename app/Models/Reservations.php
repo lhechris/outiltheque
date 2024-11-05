@@ -12,8 +12,8 @@ class Reservations extends Model
     protected $fillable = [
         'outil_id',
         'nom',
-        'prenom',
-        'email',        
+        'email',
+        'telephone',       
         'debut',
         'fin',
         'state',
@@ -42,5 +42,35 @@ class Reservations extends Model
     public const STATE_PAIEMENT = "Paiement";
     public const STATE_CONFIRME = "Confirmé";
     public const STATE_ANNULE = "Annulé";
+
+    /**
+     * 
+     */
+    public static function est_possible($outil_id,$debut,$fin) {
+        //Verifie la disponibilite
+        $data = self::leftjoin("outils","reservations.outil_id","=","outils.id")
+                                ->select("outils.nombre")
+                                ->where('reservations.outil_id', $outil_id)
+                                ->whereDate('fin','>=',$debut)
+                                ->whereDate('debut','<=',$fin);
+        //\Log::info($data->toRawSql());
+        $res=$data->get();
+
+        /*$nb=0;
+        $nombre=0;
+        foreach ($data->get() as $d) {
+            $nb++;
+            $nombre= $d->nombre;
+            \Log::info(print_r($d,true));
+        }
+        if (($nb>0) && ($nb>=$nombre)) { */
+        if ((count($res)>0) && ($res[0]->nombre<=count($res))) {
+
+            \Log::info("Outil $outil_id reservé ".count($res)." fois sur ".$res[0]->nombre);
+            return false;                
+        }
+        return true;
+    }
+    
 
 }

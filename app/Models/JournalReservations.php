@@ -12,8 +12,8 @@ class JournalReservations extends Model
     protected $fillable = [
         'outil_id',
         'nom',
-        'prenom',
         'email',
+        'telephone',
         'commentaire',
         'debut',
         'fin',

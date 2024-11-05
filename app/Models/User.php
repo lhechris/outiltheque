@@ -47,7 +47,7 @@ class User extends Authenticatable
 
 
     function is_admin() {
-        return ($this->admin == "admin");
+        return ($this->role == "admin");
     }
 
 }

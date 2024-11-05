@@ -16,8 +16,8 @@ return new class extends Migration
         Schema::create('journal_reservations', function (Blueprint $table) {
             $table->id();
             $table->string('nom');
-            $table->string('prenom');
             $table->string('email');
+            $table->string('telephone');
             $table->dateTime('debut');
             $table->unsignedBigInteger('outil_id');
             $table->dateTime('fin')->nullable();

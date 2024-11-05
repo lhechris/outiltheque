@@ -6,7 +6,7 @@
                 <label for="debut" class="mb-1 block text-sm font-medium text-gray-700">Date de récupération</label>
                 <select id="selectdebut" 
                         class="px-4 py-2 rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 disabled:cursor-not-allowed bg-blue-50"
-                        v-model="truc"
+                        v-model="datedebut"
                         @change="changedebut"
                         >
                             <option v-for="l in ldebut" :value="l">{{ moment(l).format('DD/MM') }}</option>
@@ -27,15 +27,15 @@
                         id="nom" 
                         v-model="nom" 
                         class="block border rounded-md border-gray-300 shadow-sm focus:border-blue-400 pl-1 focus:ring focus:ring-blue-200 focus:ring-opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500" 
-                        placeholder="Votre Nom" />
+                        placeholder="Votre prénom et nom" />
             </div>
             <div>
-                <label for="prenom" class="mb-1 block text-sm font-medium text-gray-700">Prénom</label>
+                <label for="nom" class="mb-1 block text-sm font-medium text-gray-700">Téléphone</label>
                 <input  type="text" 
-                        id="email" 
-                        v-model="prenom" 
+                        id="telephone" 
+                        v-model="telephone" 
                         class="block border rounded-md border-gray-300 shadow-sm focus:border-blue-400 pl-1 focus:ring focus:ring-blue-200 focus:ring-opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500" 
-                        placeholder="Votre Prénom" />
+                        placeholder="Numéro de téléphone" />
             </div>
             <div>
                 <label for="email" class="mb-1 block text-sm font-medium text-gray-700">Email</label>
@@ -72,25 +72,25 @@
     const fin = defineModel('fin')
 
     const nom = defineModel('nom')
-    const prenom = defineModel('prenom')
+    const telephone = defineModel("telephone")
     const email = defineModel('email')
 
     const props = defineProps(['outil'])
 
-    const truc = ref(ldebut.value[0])
+    const datedebut = ref(ldebut.value[0])
 
     onMounted(() => {
         debut.value = ldebut.value[0]
         fin.value = minfin.value
         nom.value = ""
-        prenom.value = ""
+        telephone.value=""
         email.value = ""
     });
 
     function changedebut() {
-        console.log(truc.value)
-        debut.value = truc.value
-        fin.value = moment(truc.value).add(6, 'days').format("YYYY-MM-DD")
+        console.log(datedebut.value)
+        debut.value = datedebut.value
+        fin.value = moment(datedebut.value).add(6, 'days').format("YYYY-MM-DD")
 
         console.log(fin.value)
         

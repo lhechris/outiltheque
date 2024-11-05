@@ -46,31 +46,15 @@ class AdminReservations extends Controller
          */
         public function store(Request $request): \Illuminate\Http\JsonResponse
         {            
-
-            //Verifie la disponibilite
-            $now = date("Y-m-d");
-            $reqdebut = $request->debut;
-
-            $data = Reservations::leftjoin("outils","reservations.outil_id","=","outils.id")
-                                  ->select("outils.nombre")
-                                  ->where('reservations.outil_id', $request->outil_id)
-                                  ->whereDate('fin','>=',$now)
-                                  ->whereDate('debut','<=',$reqdebut)
-                                  ->get();
-          //  \Log::info(\DB::getQueryLog());
-
-          //  \Log::info(print_r($data,true));
-
-
-
-            if ((count($data)>0) && (count($data)>=$data[0]->nombre)) {
+            if (Reservation::est_possible($request->outil_id,$request->debut,$request->fin)) {
+                $req = $request->all();
+                $req['paiement_state'] = Reservations::PAIEMENT_STATE_NON_PAYE;
+                $req['state'] = Reservations::STATE_RESERVE;
+                $data = Reservations::create($req);
+                return response()->json(['status' => true, 'data' => $data], 201);
+            } else {
                 return response()->json(['status' => false, 'message' => "L'article n'est pas disponible sur la période"]);
             }
-
-            $req = $request->all();
-
-            $data = Reservations::create($req);
-            return response()->json(['status' => true, 'data' => $data], 201);
         }
     
         /**

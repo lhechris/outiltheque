@@ -64,7 +64,7 @@ class ConfirmResa extends Mailable
             return new Content(
                 view: 'emails.confirmtopay',
                 with : [ 
-                    'prenom' => $this->resa->prenom,
+                    'nom' => $this->resa->nom,
                     'outil' => $this->resa->nomoutil,
                     'debut' => $date1,
                     'fin' => $date2,
@@ -76,7 +76,7 @@ class ConfirmResa extends Mailable
             return new Content(
                 view: 'emails.confirm',
                 with : [ 
-                    'prenom' => $this->resa->prenom,
+                    'nom' => $this->resa->nom,
                     'outil' => $this->resa->nomoutil,
                     'debut' => $date1,
                     'fin' => $date2

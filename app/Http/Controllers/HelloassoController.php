@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Http;
 
 use App\Mail\ConfirmResa;
 use Illuminate\Support\Facades\Mail;
+use App\Models\Paiement;
+
 
 class HelloassoController extends Controller
 {
@@ -59,18 +61,24 @@ class HelloassoController extends Controller
                             ->where("reservations.id","=",$id)
                             ->first();
 
+        \Log::info("Demande encaissement Helloaso :[".$id.'] '.$resa['nomoutil'].' pour '.$resa->nom.' '.$resa->email);
+
+        $fullname = trim($resa->nom); // remove double space
+        $firstname = substr($fullname, 0, strpos($fullname, ' '));
+        $lastname = substr($fullname, strpos($fullname, ' '), strlen($fullname));
+
 
         $details= [
             "totalAmount" => $resa->prix*100,
             "initialAmount" => $resa->prix*100,
-            "itemName" => "Location outil ".$resa['nom'],
+            "itemName" => "Location outil ".$resa['nomoutil'],
             "backUrl" => "https://outiltheque.labo-binette.fr/reservation/".$resa->id,
-            "errorUrl" => "https://outiltheque.labo-binette.fr/encaissementerreur".$resa->id,
+            "errorUrl" => "https://outiltheque.labo-binette.fr/encaissementerreur/".$resa->id,
             "returnUrl" => "https://outiltheque.labo-binette.fr/confirmation/".$resa->id,
             "containsDonation" => false,
             "payer"=> [
-              "firstName"=> $resa->prenom,
-              "lastName"=> $resa->nom,
+              "firstName"=> $firstname,
+              "lastName"=> $lastname,
               "email"=> $resa->email,
               "country"=> "FRA"
             ]            
@@ -81,10 +89,9 @@ class HelloassoController extends Controller
         $accesstoken = $data->valeur;
 
         $haresp = Http::withToken($accesstoken)->post($this->encaissementurl, $details);
+        \Log::info("Reponse : ".$haresp->status());
         
         if ($haresp->status() == 200) {
-            \Log::info("OK helloasso");
-            \Log::info($haresp->status());
             \Log::info($haresp->body());
             //store status
             $resa->paiement_state = Reservations::PAIEMENT_STATE_HA_ENCOURS;
@@ -96,7 +103,6 @@ class HelloassoController extends Controller
         
         } else {
             \Log::info("Erreur helloasso");
-            \Log::info($haresp->status());
             \Log::info($haresp->body());
             return response()->json(['status' => false, 'data' => "Erreur communication helloasso"]);
         }
@@ -113,6 +119,8 @@ class HelloassoController extends Controller
     {
         $resa = Reservations::find($id);
 
+        \Log::info("Paiement en cash :[".$id.'] '.$resa['nomoutil'].' pour '.$resa->nom.' '.$resa->email);
+        \Log::info("Status = ".Reservations::STATE_PAIEMENT." Paiement status=".Reservations::PAIEMENT_STATE_A_PAYER);
         $resa->paiement_state = Reservations::PAIEMENT_STATE_A_PAYER;
         $resa->state = Reservations::STATE_PAIEMENT;
         $resa->update();
@@ -130,45 +138,43 @@ class HelloassoController extends Controller
     {
         //"https://www.silouso.fr/encaissementreturn?checkoutIntentId=28963&code=succeeded&orderId=27479"
 
-        //$this->refreshToken();
-        $data = Helloasso::where('nom','=',$this->keyAccessToken)->first();
-        $accesstoken = $data->valeur;
 
-        $resa = Reservations::leftjoin("outils","reservations.outil_id","=","outils.id")
-                            ->select("reservations.*","outils.nom as nomoutil","outils.prix")
-                            ->where("reservations.id","=",$id)
-                            ->first();
-                            
-        if ($resa->paiement_state == Reservations::PAIEMENT_STATE_A_PAYER) {
-            if ($resa->state==Reservations::STATE_PAIEMENT) {
-                Mail::to($resa->email)->send(new ConfirmResa($resa));
-                $resa->state=Reservations::STATE_CONFIRME;
-                $resa->update();
-            }
-            return response()->json(['status' => true, 'data' => $resa]);            
-        }
+        $paiement = new Paiement($id);      
 
+        if ($paiement->needCheckHA()) {
 
-        $haresp = Http::withToken($accesstoken)->get($this->encaissementurl."/".$resa->paiement_id);
+            //$this->refreshToken();
+            $data = Helloasso::where('nom','=',$this->keyAccessToken)->first();
+            $accesstoken = $data->valeur;
+
+            \Log::info($this->encaissementurl."/".$paiement->getResa()->paiement_id);
+            $haresp = Http::withToken($accesstoken)->get($this->encaissementurl."/".$paiement->getResa()->paiement_id);
+            \Log::info("Reponse : ".$haresp->status());
+
+            if ($haresp->status() == 200) {
+                \Log::info($haresp->body());
+
+                if ($paiement->checkHA($haresp->json())) {
+                    return response()->json(['status' => true, 'data' => $paiement->getResa()]);
+                } else {
+                    return response()->json(['status' => false, 'data' => $paiement->getLastErreur()]);
+                }
         
-        if ($haresp->status() == 200) {
-            \Log::info($haresp->body());
-            if ($resa->state==Reservations::STATE_PAIEMENT) {
-                $resa->paiement_state = Reservations::PAIEMENT_STATE_HA_PAYE;
-                $resa->state=Reservations::STATE_CONFIRME;
-                $resa->update();
-                //Envoi du mail
-                Mail::to($resa->email)->send(new ConfirmResa($resa));
+            } else {
+                \Log::info("Erreur helloasso");
+                \Log::info($haresp->status());
+                \Log::info($haresp->body());
+                return response()->json(['status' => false, 'data' => "Erreur communication helloasso"]);
             }
-            return response()->json(['status' => true, 'data' => $resa]);
         
+        } else if ($paiement->checkCash()) {
+            return response()->json(['status' => true, 'data' => $paiement->getResa()]);  
+
         } else {
-            \Log::info("Erreur helloasso");
-            \Log::info($haresp->status());
-            \Log::info($haresp->body());
-            return response()->json(['status' => false, 'data' => "Erreur communication helloasso"]);
-        }
-    }    
+            return response()->json(['status' => false, 'data' => $paiement->getLastErreur()]);  
+        }        
+
+}    
 
 
 
@@ -296,7 +302,7 @@ class HelloassoController extends Controller
 
         $data = Helloasso::where('nom','=',$this->keyRefreshToken)->first();
         $refreshtoken = $data->valeur;
-        
+
         $details = ['grant_type' => 'refresh_token',
                     'client_id' => $clientId,
                     'refresh_token' => $refreshtoken];

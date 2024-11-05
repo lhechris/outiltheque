@@ -99,15 +99,17 @@ class OutilsController extends Controller
 
         $data = $response->first();
 
-        $f2 = File::where("id","=",$data->file2_id)->first();
-        if ($f2) {
-            $data['file2_path'] = $f2['file_path'];
-            $data['file2_id'] = $f2['id'];
+        if ($data) {
+            $f2 = File::where("id","=",$data->file2_id)->first();
+            if ($f2) {
+                $data['file2_path'] = $f2['file_path'];
+                $data['file2_id'] = $f2['id'];
+            }
+            $data["caracteristique"] = $caract->get();
+            return response()->json($data, 200);
+        } else {
+            return response()->json(array(),200);
         }
-        $data["caracteristique"] = $caract->get();
-
-
-        return response()->json($data, 200);
     }
 
     /**

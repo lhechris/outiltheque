@@ -18,7 +18,7 @@ class ReservationController extends Controller
         public function index(): \Illuminate\Http\JsonResponse
         {
             $data = Reservations::leftjoin("outils","reservations.outil_id","=","outils.id")
-                            ->select("reservations.*","outils.nom")
+                            ->select("reservations.*","outils.nom as nomoutil")
                             ->get();
 
             return response()->json(['status' => true, 'data' => $data]);
@@ -47,7 +47,7 @@ class ReservationController extends Controller
             $validateReq = Validator::make($request->all(),
                 [
                     'nom' => 'required',
-                    'prenom' => 'required',
+                    'telephone' => 'required',
                     'email' => 'required',
                     'outil_id' => 'required',
                     'debut' => 'required',
@@ -62,34 +62,17 @@ class ReservationController extends Controller
                 ], 401);
             }
 
-            //Verifie la disponibilite
-            $data = Reservations::leftjoin("outils","reservations.outil_id","=","outils.id")
-                                  ->select("outils.nombre")
-                                  ->where('reservations.outil_id', $request->outil_id)
-                                  ->whereDate('fin','>=',$request->debut)
-                                  ->whereDate('debut','<=',$request->fin);
-            \Log::info($data->toRawSql());
-            $res=$data->get();
 
-            /*$nb=0;
-            $nombre=0;
-            foreach ($data->get() as $d) {
-                $nb++;
-                $nombre= $d->nombre;
-                \Log::info(print_r($d,true));
-            }
-            if (($nb>0) && ($nb>=$nombre)) { */
-            if ((count($res)>0) && ($res[0]->nombre<=count($res))) {
+            if (Reservations::est_possible($request->outil_id,$request->debut,$request->fin)) {
+                $req = $request->all();
+                $req['paiement_state'] = Reservations::PAIEMENT_STATE_NON_PAYE;
+                $req['state'] = Reservations::STATE_RESERVE;
+                $data = Reservations::create($req);
+                return response()->json(['status' => true, 'data' => $data], 201);
 
-                \Log::info("Outil $request->outil_id reservé ".count($res)." fois sur ".$res[0]->nombre);
+            } else {
                 return response()->json(['status' => false, 'message' => "L'article n'est pas disponible sur la période"]);
             }
-
-            $req = $request->all();
-            $req['paiement_state'] = Reservations::PAIEMENT_STATE_NON_PAYE;
-            $req['state'] = Reservations::STATE_RESERVE;
-            $data = Reservations::create($req);
-            return response()->json(['status' => true, 'data' => $data], 201);
         }
     
         /**
@@ -143,7 +126,7 @@ class ReservationController extends Controller
             $user = Auth()->user();
             $data = Reservations::find($id);
 
-            if (($user->id != $request->user_id) || ($user_id != $data->user_id)) {
+            if (($user == null) || (!$user->is_admin()) ) {  
                 return response()->json([
                     'status' => false,
                     'message' => 'Non authorisé',
@@ -173,11 +156,12 @@ class ReservationController extends Controller
             if ($data) {
                 if ($data->state == Reservations::STATE_RESERVE) {
                     $data->state = Reservations::STATE_ANNULE;
+                    JournalReservations::create($data->toArray());
+                    $data->delete();
+                    return response()->json(['status' => true, 'message' => 'reservation supprimée']);
                 }
-                JournalReservations::create($data->toArray());
-                $data->delete();
             }
-            return response()->json(['status' => true, 'message' => 'reservation supprimée']);
+            return response()->json(['status' => false, 'message' => 'Non authorisé'],401);
         }
 }
 

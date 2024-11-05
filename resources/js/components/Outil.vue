@@ -8,7 +8,7 @@
 
         <div class="mt-1 p-2">
         <h2 class="text-slate-700">{{ value.nom }}</h2>
-        <p class="mt-1 text-sm text-slate-400 h-10">{{ truncate(value.description,60) }}</p>
+        <p class="mt-1 text-sm text-slate-400 h-10">{{ truncate(value.description,55) }}</p>
         <p class="mt-1 text-sm text-slate-400">Durée d'emprunt {{ value.duree }} jours</p>
 
         <div class="mt-3 flex items-end justify-between">
