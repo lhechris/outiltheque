@@ -15,6 +15,7 @@ return new class extends Migration
     {
         Schema::create('journal_reservations', function (Blueprint $table) {
             $table->id();
+            $table->string('reference');
             $table->string('nom');
             $table->string('email');
             $table->string('telephone');

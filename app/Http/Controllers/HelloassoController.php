@@ -16,34 +16,20 @@ use App\Models\Paiement;
 class HelloassoController extends Controller
 {
 
-/*     private $authurl = 'https://api.helloasso.com/oauth2/token';
-    private $encaissementurl = 'https://api.helloasso.com/v5/organizations/labo-binette/checkout-intents';
-    private $keyClientId = 'client_id';
-    private $keyClientSecret = 'client_secret';
-    private $keyAccessToken = 'access_token';
-    private $keyRefreshToken = 'refresh_token';  */
-
-    //MODE TEST
-    private $authurl = 'https://api.helloasso-sandbox.com/oauth2/token';
-    private $encaissementurl = 'https://api.helloasso-sandbox.com/v5/organizations/labobinette/checkout-intents';
-    private $keyClientId = 'Testclient_id';
-    private $keyClientSecret = 'Testclient_secret';
-    private $keyAccessToken = 'Testaccess_token';
-    private $keyRefreshToken = 'Testrefresh_token'; 
-
-
-    /**
+   /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\JsonResponse
      */
     public function index(): \Illuminate\Http\JsonResponse
     {
+        //Pour test il n'ya plus de route 
  
-        $this->refreshToken();
+        /*$this->refreshToken();
         //$this->initToken();
         $data = Helloasso::get();        
-        return response()->json(['status' => true, 'data' => $data]);
+        return response()->json(['status' => true, 'data' => $data]);*/
+        return response()->json(['status' => false, 'data' => 'Not implemented']);
     }
 
 
@@ -53,15 +39,15 @@ class HelloassoController extends Controller
      * @param id l'identifiant de la reservation 
      * @return \Illuminate\Http\JsonResponse
      */
-    public function encaissement($id) : \Illuminate\Http\JsonResponse
+    public function encaissement($reference) : \Illuminate\Http\JsonResponse
     {
 
         $resa = Reservations::leftjoin("outils","reservations.outil_id","=","outils.id")
                             ->select("reservations.*","outils.nom as nomoutil","outils.prix")
-                            ->where("reservations.id","=",$id)
+                            ->where("reservations.reference","=",$reference)
                             ->first();
 
-        \Log::info("Demande encaissement Helloaso :[".$id.'] '.$resa['nomoutil'].' pour '.$resa->nom.' '.$resa->email);
+        \Log::info("Demande encaissement Helloaso :[".$reference.'] '.$resa['nomoutil'].' pour '.$resa->nom.' '.$resa->email);
 
         $fullname = trim($resa->nom); // remove double space
         $firstname = substr($fullname, 0, strpos($fullname, ' '));
@@ -71,10 +57,10 @@ class HelloassoController extends Controller
         $details= [
             "totalAmount" => $resa->prix*100,
             "initialAmount" => $resa->prix*100,
-            "itemName" => "Location outil ".$resa['nomoutil'],
-            "backUrl" => "https://outiltheque.labo-binette.fr/reservation/".$resa->id,
-            "errorUrl" => "https://outiltheque.labo-binette.fr/encaissementerreur/".$resa->id,
-            "returnUrl" => "https://outiltheque.labo-binette.fr/confirmation/".$resa->id,
+            "itemName" => "Location ".$resa['reference']."(".$resa['nomoutil'].")",
+            "backUrl" => "https://outiltheque.labo-binette.fr/encaissementerreur/".$resa->reference,
+            "errorUrl" => "https://outiltheque.labo-binette.fr/encaissementerreur/".$resa->reference,
+            "returnUrl" => "https://outiltheque.labo-binette.fr/confirmation/".$resa->reference,
             "containsDonation" => false,
             "payer"=> [
               "firstName"=> $firstname,
@@ -85,10 +71,10 @@ class HelloassoController extends Controller
         ];
 
         $this->refreshToken();
-        $data = Helloasso::where('nom','=',$this->keyAccessToken)->first();
+        $data = Helloasso::where('nom','=',env('HELLOASSO_KEY_ACCESS_TOKEN',''))->first();
         $accesstoken = $data->valeur;
 
-        $haresp = Http::withToken($accesstoken)->post($this->encaissementurl, $details);
+        $haresp = Http::withToken($accesstoken)->post(env('HELLOASSO_ENCAISSEMENT_URL',''), $details);
         \Log::info("Reponse : ".$haresp->status());
         
         if ($haresp->status() == 200) {
@@ -115,11 +101,11 @@ class HelloassoController extends Controller
      * @param id l'identifiant de la reservation 
      * @return \Illuminate\Http\JsonResponse
      */
-    public function cash(Request $request, $id) : \Illuminate\Http\JsonResponse
+    public function cash(Request $request, $reference) : \Illuminate\Http\JsonResponse
     {
-        $resa = Reservations::find($id);
+        $resa = Reservations::where('reference','=',$reference)->first();
 
-        \Log::info("Paiement en cash :[".$id.'] '.$resa['nomoutil'].' pour '.$resa->nom.' '.$resa->email);
+        \Log::info("Paiement en cash :[".$reference.'] '.$resa['nomoutil'].' pour '.$resa->nom.' '.$resa->email);
         \Log::info("Status = ".Reservations::STATE_PAIEMENT." Paiement status=".Reservations::PAIEMENT_STATE_A_PAYER);
         $resa->paiement_state = Reservations::PAIEMENT_STATE_A_PAYER;
         $resa->state = Reservations::STATE_PAIEMENT;
@@ -134,21 +120,23 @@ class HelloassoController extends Controller
      * @param id l'identifiant de la reservation 
      * @return \Illuminate\Http\JsonResponse
      */
-    public function checkPaiement($id) : \Illuminate\Http\JsonResponse
+    public function checkPaiement($reference) : \Illuminate\Http\JsonResponse
     {
         //"https://www.silouso.fr/encaissementreturn?checkoutIntentId=28963&code=succeeded&orderId=27479"
 
 
-        $paiement = new Paiement($id);      
+       
+
+        $paiement = new Paiement($reference);      
 
         if ($paiement->needCheckHA()) {
 
             //$this->refreshToken();
-            $data = Helloasso::where('nom','=',$this->keyAccessToken)->first();
+            $data = Helloasso::where('nom','=',env('HELLOASSO_KEY_ACCESS_TOKEN',''))->first();
             $accesstoken = $data->valeur;
 
-            \Log::info($this->encaissementurl."/".$paiement->getResa()->paiement_id);
-            $haresp = Http::withToken($accesstoken)->get($this->encaissementurl."/".$paiement->getResa()->paiement_id);
+            \Log::info(env('HELLOASSO_ENCAISSEMENT_URL','')."/".$paiement->getResa()->paiement_id);
+            $haresp = Http::withToken($accesstoken)->get(env('HELLOASSO_ENCAISSEMENT_URL','')."/".$paiement->getResa()->paiement_id);
             \Log::info("Reponse : ".$haresp->status());
 
             if ($haresp->status() == 200) {
@@ -254,30 +242,30 @@ class HelloassoController extends Controller
      */
     private function initToken()
     {
-        $data = Helloasso::where('nom','=',$this->keyClientId)->first();
+        $data = Helloasso::where('nom','=',env('HELLOASSO_KEY_CLIENT_ID',''))->first();
         $clientId = $data->valeur;
 
-        $data = Helloasso::where('nom','=',$this->keyClientSecret)->first();
+        $data = Helloasso::where('nom','=',env('HELLOASSO_KEY_CLIENT_SECRET',''))->first();
         $clientSecret = $data->valeur;
         
         $details = ['grant_type' => 'client_credentials',
                     'client_id' => $clientId,
                     'client_secret' => $clientSecret];
         try {
-            
+            \Log::info("Init Token");
             \Log::info($details);
-            \Log::info($this->authurl);
-            $response = Http::asForm()->post($this->authurl, $details);
+            \Log::info(env('HELLOASSO_AUTH_URL',''));
+            $response = Http::asForm()->post(env('HELLOASSO_AUTH_URL',''), $details);
         
             \Log::info("réponse : ".$response->status());
             \Log::info($response->body());
 
             if ($response->ok()) {
                 $token = $response->json();
-                $data = Helloasso::where('nom','=',$this->keyAccessToken)->first();
+                $data = Helloasso::where('nom','=',env('HELLOASSO_KEY_ACCESS_TOKEN',''))->first();
                 $data->valeur = $token['access_token'];
                 $data->update();
-                $data = Helloasso::where('nom','=',$this->keyRefreshToken)->first();
+                $data = Helloasso::where('nom','=',env('HELLOASSO_KEY_REFRESH_TOKEN',''))->first();
                 $data->valeur = $token['refresh_token'];
                 $data->update();
             }
@@ -297,27 +285,27 @@ class HelloassoController extends Controller
      */    
     private function refreshToken()
     {
-        $data = Helloasso::where('nom','=',$this->keyClientId)->first();
+        $data = Helloasso::where('nom','=',env('HELLOASSO_KEY_CLIENT_ID',''))->first();
         $clientId = $data->valeur;
 
-        $data = Helloasso::where('nom','=',$this->keyRefreshToken)->first();
+        $data = Helloasso::where('nom','=',env('HELLOASSO_KEY_REFRESH_TOKEN',''))->first();
         $refreshtoken = $data->valeur;
 
         $details = ['grant_type' => 'refresh_token',
                     'client_id' => $clientId,
                     'refresh_token' => $refreshtoken];
         try {
-            $response = Http::asForm()->post($this->authurl, $details);
+            $response = Http::asForm()->post(env('HELLOASSO_AUTH_URL',''), $details);
         
             \Log::info("réponse : ".$response->status());
             \Log::info($response->body());
 
             if ($response->ok()) {
                 $token = $response->json();
-                $data = Helloasso::where('nom','=',$this->keyAccessToken)->first();
+                $data = Helloasso::where('nom','=',env('HELLOASSO_KEY_ACCESS_TOKEN',''))->first();
                 $data->valeur = $token['access_token'];
                 $data->update();
-                $data = Helloasso::where('nom','=',$this->keyRefreshToken)->first();
+                $data = Helloasso::where('nom','=',env('HELLOASSO_KEY_REFRESH_TOKEN',''))->first();
                 $data->valeur = $token['refresh_token'];
                 $data->update();
             }

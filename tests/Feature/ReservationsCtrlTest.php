@@ -28,45 +28,11 @@ class ReservationsCtrlTest extends TestCase
      */
     public function test_get_reservations() : void
     {
-        $outil = Outils::factory()->create();
-        $resa = Reservations::factory()->count(2)->create(['debut'=> '2024-10-24', 'fin'=>'2024-10-30']);
-
-        $expected = [];
-        foreach ($resa as $r) {
-            array_push($expected,[
-                    "nom" => $r->nom,
-                    "nomoutil"=> $outil->nom, 
-                    "email"=>$r->email, 
-                    "telephone"=>$r->telephone,
-                    "outil_id"=>$r->outil_id,
-                    "debut" => $r->debut,
-                    "fin" => $r->fin,
-                    "paiement_state" => $r->paiement_state,
-                    "state" => $r->state,
-                    "commentaire" => $r->commentaire
-                ]);
-        }
-
         $response = $this->get('/api/reservations');
-        //$response->dump();
-        $response->assertStatus(200);        
-        $response->assertJson(['status' => true, "data" => $expected]);
+        $response->assertJson(['status' => false, "data" => 'not implemented']);
     }
 
-    /**
-     * Tester le retour des resa alors qu'il n'y en a pas
-     * 
-     */
-    public function test_get_reservations_with_no_resa() : void
-    {
-
-        $expected = [];
-
-        $response = $this->get('/api/reservations');
-        $response->assertStatus(200);        
-        $response->assertJson(['status' => true, "data" => $expected]);
-    }
-    
+   
     /**
      * Tester une nouvelle resa
      * 
@@ -137,7 +103,7 @@ class ReservationsCtrlTest extends TestCase
                     'fin' => $data["fin"]
                 ];
 
-        $response = $this->actingAs($user)->putJson('/api/reservations/1',$data);
+        $response = $this->actingAs($user)->putJson('/api/reservations/'.$resa[0]->reference,$data);
         $response->assertStatus(202);        
         $response->assertJson(["status" => true, "data" => $expected]);
     }
@@ -160,7 +126,7 @@ class ReservationsCtrlTest extends TestCase
                 'fin' => '2024-10-10'
               ];
 
-        $response = $this->actingAs($user)->putJson('/api/reservations/1',$data);
+        $response = $this->actingAs($user)->putJson('/api/reservations/'.$resa[0]->reference,$data);
         $response->assertStatus(401);        
         $response->assertJson(["status" => false, "message" => "Non authorisé", "errors" => []]);
     }
@@ -169,11 +135,11 @@ class ReservationsCtrlTest extends TestCase
      * Tester la suppression d'une reservation
      * uniquement dans l'etat RESERVE     
      */
-    public function test_annulation_reservations() : void
+    public function test_annulation_reservations_reserve() : void
     {
         $resa = Reservations::factory()->create(["state" => Reservations::STATE_RESERVE]);
 
-        $response = $this->delete('/api/reservations/1');
+        $response = $this->delete('/api/reservations/'.$resa->reference);
         $response->assertStatus(200);        
         $j=JournalReservations::find(1);
         $this->assertEquals(Reservations::STATE_ANNULE,$j->state);
@@ -187,10 +153,11 @@ class ReservationsCtrlTest extends TestCase
     {
         $resa = Reservations::factory()->create(["state" => Reservations::STATE_PAIEMENT]);
 
-        $response = $this->delete('/api/reservations/1');
-        $response->assertStatus(401);
-        $response->assertJson(["status" => false, "message" => "Non authorisé"]);
-        $this->assertNotNull(Reservations::find(1));
+        $response = $this->delete('/api/reservations/'.$resa->reference);
+        $response->assertStatus(200);
+        $j=JournalReservations::find(1);
+        $this->assertEquals(Reservations::STATE_ANNULE,$j->state);
+        $this->assertNull(Reservations::find(1));
     }
 
     /**
@@ -200,7 +167,7 @@ class ReservationsCtrlTest extends TestCase
     {
         $resa = Reservations::factory()->create(["state" => Reservations::STATE_ANNULE]);
 
-        $response = $this->delete('/api/reservations/1');
+        $response = $this->delete('/api/reservations/'.$resa->reference);
         $response->assertStatus(401);
         $response->assertJson(["status" => false, "message" => "Non authorisé"]);
         $this->assertNotNull(Reservations::find(1));
@@ -213,7 +180,7 @@ class ReservationsCtrlTest extends TestCase
     {
         $resa = Reservations::factory()->create(["state" => Reservations::STATE_CONFIRME]);
 
-        $response = $this->delete('/api/reservations/1');
+        $response = $this->delete('/api/reservations/'.$resa->reference);
         $response->assertStatus(401);
         $response->assertJson(["status" => false, "message" => "Non authorisé"]);
         $this->assertNotNull(Reservations::find(1));

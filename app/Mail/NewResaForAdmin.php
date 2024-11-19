@@ -13,7 +13,7 @@ use Illuminate\Queue\SerializesModels;
 use App\Models\Reservations;
 use App\Models\Outils;
 
-class ConfirmResa extends Mailable
+class NewResaForAdmin extends Mailable
 {
     use Queueable, SerializesModels;
 
@@ -34,43 +34,27 @@ class ConfirmResa extends Mailable
     {
         return new Envelope(
             from: new Address('labobinette@machris.fr', 'Outiltheque de labo binette'),
-            subject: 'Confirmation Reservation',
+            subject: 'Nouvelle Reservation '.$this->resa->nomoutil,
         );
     }
-
- 
 
     /**
      * Get the message content definition.
      */
     public function content(): Content
-    {   
-
-        if ($this->resa->paiement_state== "A payer") {
+    {
             return new Content(
-                view: 'emails.confirmtopay',
+                view: 'emails.new_resa_admin',
                 with : [ 
                     'nom' => $this->resa->nom,
                     'outil' => $this->resa->nomoutil,
                     'debut' => $this->resa->debutfrench(),
                     'fin' => $this->resa->finfrench(),
                     'prix' => $this->resa->prix,
+                    'paiement' =>$this->resa->paiement_state,
                     'reference' => $this->resa->reference
                 ]
             );
-        } else {
-
-            return new Content(
-                view: 'emails.confirm',
-                with : [ 
-                    'nom' => $this->resa->nom,
-                    'outil' => $this->resa->nomoutil,
-                    'debut' => $this->resa->debutfrench(),
-                    'fin' => $this->resa->finfrench(),
-                    'reference' => $this->resa->reference
-                ]
-            );
-        }
     }
 
     /**

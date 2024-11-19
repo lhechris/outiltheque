@@ -17,11 +17,12 @@ class ReservationController extends Controller
          */
         public function index(): \Illuminate\Http\JsonResponse
         {
-            $data = Reservations::leftjoin("outils","reservations.outil_id","=","outils.id")
+           /* $data = Reservations::leftjoin("outils","reservations.outil_id","=","outils.id")
                             ->select("reservations.*","outils.nom as nomoutil")
                             ->get();
 
-            return response()->json(['status' => true, 'data' => $data]);
+            return response()->json(['status' => true, 'data' => $data]);*/
+            return response()->json(['status' => false, 'data' => 'not implemented']);
         }
     
         /**
@@ -78,12 +79,12 @@ class ReservationController extends Controller
         /**
          * Display the specified resource.
          *
-         * @param int $id
+         * @param int $reference
          * @return \Illuminate\Http\JsonResponse
          */
-        public function show($id): \Illuminate\Http\JsonResponse
+        public function show($reference): \Illuminate\Http\JsonResponse
         {
-            $response = Reservations::findOrFail($id);
+            $response = Reservations::where('reference','=',$reference)->first();
             
             return response()->json($response, 200);
         }
@@ -106,7 +107,7 @@ class ReservationController extends Controller
          * @param int $id
          * @return \Illuminate\Http\JsonResponse
          */
-        public function update(Request $request, $id): \Illuminate\Http\JsonResponse
+        public function update(Request $request, $reference): \Illuminate\Http\JsonResponse
         {
             $validateReq = Validator::make($request->all(),
                 [
@@ -124,7 +125,7 @@ class ReservationController extends Controller
                 ], 401);
             }
             $user = Auth()->user();
-            $data = Reservations::find($id);
+            $data = Reservations::where('reference','=',$reference)->first();
 
             if (($user == null) || (!$user->is_admin()) ) {  
                 return response()->json([
@@ -148,13 +149,13 @@ class ReservationController extends Controller
          * @return \Illuminate\Http\JsonResponse
          * @throws \Throwable
          */
-        public function destroy(int $id): \Illuminate\Http\JsonResponse
+        public function destroy(string $reference): \Illuminate\Http\JsonResponse
         {
-            throw_if(!$id, 'reservation Id is missing');
-            $data = Reservations::findOrFail($id);
+            throw_if(!$reference, 'reservation Id is missing');
+            $data = Reservations::where('reference','=',$reference)->first();
             //Reservations::findOrFail($id)->delete();
             if ($data) {
-                if ($data->state == Reservations::STATE_RESERVE) {
+                if (($data->state == Reservations::STATE_RESERVE) || ($data->state == Reservations::STATE_PAIEMENT)) {
                     $data->state = Reservations::STATE_ANNULE;
                     JournalReservations::create($data->toArray());
                     $data->delete();

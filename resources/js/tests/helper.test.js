@@ -86,10 +86,13 @@ describe('validate Telephone', () => {
 
 
     test('makes a request without token in storage', async () => {
-
+        const dataMock = [{ id: 1 }, { id: 2 }]
+        axios.get.mockResolvedValue(
+            dataMock
+        )
         localStorage.removeItem('APP_DEMO_USER_TOKEN')
         const ret = await request("get","http://example.com")
-        expect(ret).toStrictEqual(false)
+        expect(ret).toStrictEqual(dataMock)
 
     })
 

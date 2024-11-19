@@ -5,5 +5,6 @@
     <p>Merci de vous présenter au jardin le {{ $debut}} entre 17h et 19h pour récupérer votre outil</p>
     <p>avec votre paiement de {{ $prix }} euro </p>
     <p>vous devez le rendre le {{ $fin }}</p>
+    <p>Référence de la réservation : {{ $reference }}</p>
     </body>
 </html>

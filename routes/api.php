@@ -25,7 +25,7 @@ use App\Http\Controllers\CaracoutilsController;
 */
 
 Route::post('/auth/register', [AuthController::class, 'register']);
-Route::post('/auth/login', [AuthController::class, 'login']);
+Route::post('/auth/login', [AuthController::class, 'login'])->name('login');
 
 
 Route::get('outils', [OutilsController::class,'index']);
@@ -44,7 +44,6 @@ Route::apiResource('categories', CategoriesController::class)->middleware('auth:
 Route::get('categoriesdetailed', [CategoriesController::class,'indexchilds']);
 Route::apiResource('caracoutils', CaracoutilsController::class)->middleware('auth:sanctum');
 
-Route::get('helloasso', [HelloassoController::class,'index']);
 Route::get('encaissement/{resa}', [HelloassoController::class,'encaissement']);
 Route::get('checkpaiement/{resa}', [HelloassoController::class,'checkPaiement']);
 Route::put('cash/{resa}', [HelloassoController::class,'cash']);

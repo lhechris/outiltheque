@@ -3,7 +3,7 @@
         <div class="grid justify-center gap-5 py-4" >
             <h1 >Confirmation de votre réservation</h1>        
             <div v-if="resa">
-                <p>Code réservation : {{ resa.id }}</p>
+                <p>Code réservation : {{ resa.reference }}</p>
                 <p>Date d'emprunt : {{ resa.debut }}</p>
                 <button class="bg-blue-500 hover:bg-blue-900 text-white font-bold py-2 px-4 rounded" 
                             id="confirm" 

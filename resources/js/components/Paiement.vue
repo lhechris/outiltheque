@@ -1,6 +1,6 @@
 <template>
     <div class="flex flex-col">
-        <p>Page Paiement de la réservation {{ resa.id }}</p>
+        <p>Page Paiement de la réservation {{ resa.reference }}</p>
         <button type="button" 
                 class="rounded-lg px-5 py-2.5 text-center text-sm font-medium text-white shadow-sm transition-all hover:border-blue-700 focus:ring focus:ring-blue-200 disabled:cursor-not-allowed disabled:border-blue-300 disabled:bg-blue-300"
                 @click="handleHA"

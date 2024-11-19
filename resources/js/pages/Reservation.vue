@@ -123,7 +123,7 @@
     function pHA() {
         erreur.value = null
         message.value = null
-        paiementHA(resa.value.id)
+        paiementHA(resa.value.reference)
             .then(result => {
                 console.log("Redirection vers :" + result)
                 message.value = "Paiement ok"                
@@ -142,9 +142,9 @@
     function pCash() {
         erreur.value = null
         message.value = null
-        paiementCash(resa.value.id,message.value,erreur.value)
+        paiementCash(resa.value.reference,message.value,erreur.value)
         .then(() => {
-            router.push("/confirmation/"+resa.value.id)    
+            router.push("/confirmation/"+resa.value.reference)    
         }).catch(err => {
             console.log(err)
             erreur.value = err.message
@@ -155,7 +155,7 @@
     function pCancel() {
         erreur.value = null
         message.value = null
-        paiementCancel(resa.value.id)
+        paiementCancel(resa.value.reference)
         .then(() => {
             router.push("/")    
         }).catch(err => {
@@ -171,8 +171,6 @@
 
     const handleOutils = async () => {
         
-        console.log("handleoutils");
-
         const url = '/api/outils/'+props.outilid
         //const url = '/api/outils/1'
 

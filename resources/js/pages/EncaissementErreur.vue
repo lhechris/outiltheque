@@ -12,7 +12,7 @@
             <div v-else>
                 <h1 >Erreur encaissement</h1>        
                 <div v-if="resa">
-                    <p>Code réservation : {{ resa.id }}</p>
+                    <p>Code réservation : {{ resa.reference }}</p>
                     <p>Date d'emprunt : {{ resa.debut }}</p>
                     <button class="bg-blue-500 hover:bg-blue-900 text-white font-bold py-2 px-4 rounded" 
                                 id="confirm" 
@@ -89,7 +89,7 @@
     function pHA() {
         erreur.value = null
         message.value = null
-        paiementHA(resa.value.id)
+        paiementHA(resa.value.reference)
             .then(result => {
                 console.log("Redirection vers :" + result)
                 message.value = "Paiement ok"                
@@ -106,7 +106,7 @@
     function pCash() {
         erreur.value = null
         message.value = null
-        paiementCash(resa.value.id,message.value,erreur.value)
+        paiementCash(resa.value.reference,message.value,erreur.value)
         .then(() => {
             router.push("/")    
         }).catch(err => {
@@ -119,7 +119,7 @@
     function pCancel() {
         erreur.value = null
         message.value = null
-        paiementCancel(resa.value.id)
+        paiementCancel(resa.value.reference)
         .then(() => {
             router.push("/")    
         }).catch(err => {

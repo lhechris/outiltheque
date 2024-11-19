@@ -4,6 +4,7 @@ namespace App\Models;
 use App\Models\Helloasso;
 use App\Models\Reservations;
 use App\Mail\ConfirmResa;
+use App\Mail\NewResaForAdmin;
 use Illuminate\Support\Facades\Mail;
 
 class Paiement {
@@ -11,10 +12,10 @@ class Paiement {
     protected $resa;
     protected $messageErreur;
 
-    public function __construct($resaid) {
+    public function __construct($resaref) {
         $this->resa = Reservations::leftjoin("outils","reservations.outil_id","=","outils.id")
                             ->select("reservations.*","outils.nom as nomoutil","outils.prix")
-                            ->where("reservations.id","=",$resaid)
+                            ->where("reservations.reference","=",$resaref)
                             ->first();
 
         $this->messageErreur = "";
@@ -46,7 +47,7 @@ class Paiement {
             return false;
         }
 
-        \Log::info("Verification paiement :[".$this->resa->id.'] '.$this->resa['nomoutil'].' pour '.$this->resa->nom.' '.$this->resa->email);                            
+        \Log::info("Verification paiement :[".$this->resa->reference.'] '.$this->resa['nomoutil'].' pour '.$this->resa->nom.' '.$this->resa->email);                            
 
         if ($this->resa->paiement_state == Reservations::PAIEMENT_STATE_A_PAYER) {
             \Log::info("Paiement cash");
@@ -54,6 +55,8 @@ class Paiement {
                 \Log::info("On envoi le mail a ".$this->resa->email);
                 \Log::info("Status = ".Reservations::STATE_CONFIRME." Paiement status=".Reservations::PAIEMENT_STATE_A_PAYER);
                 Mail::to($this->resa->email)->send(new ConfirmResa($this->resa));
+                //Mail::to("labo.binette31@gmail.com")->send(new NewResaForAdmin($this->resa));
+                Mail::to("lhechris@gmail.com")->send(new NewResaForAdmin($this->resa));
                 $this->resa->state=Reservations::STATE_CONFIRME;
                 $this->resa->update();
             }

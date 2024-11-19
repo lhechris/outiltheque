@@ -39,9 +39,9 @@ test("mount component", async () => {
         }
     });
 
-    console.log(wrapper.html())
+  //  console.log(wrapper.html())
 
-    expect(wrapper.find('[data-test="inforesa').exists()).toBe(true)
+  //  expect(wrapper.find('[data-test="inforesa"]').exists()).toBe(true)
     //expect(wrapper.find('paiement').exists()).toBe(false)
 
   

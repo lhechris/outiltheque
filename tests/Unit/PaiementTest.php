@@ -25,7 +25,7 @@ class PaiementTest extends TestCase
     public function test_needCheckHa_true(): void
     {
         $resa = Reservations::factory()->create((['paiement_state'=> Reservations::PAIEMENT_STATE_HA_ENCOURS]));        
-        $paiement = new Paiement($resa->id); 
+        $paiement = new Paiement($resa->reference); 
         $this->assertTrue($paiement->needCheckHA());
     }
 
@@ -35,7 +35,7 @@ class PaiementTest extends TestCase
     public function test_needCheckHa_false(): void
     {
         $resa = Reservations::factory()->create((['paiement_state'=> Reservations::PAIEMENT_STATE_A_PAYER]));        
-        $paiement = new Paiement($resa->id);        
+        $paiement = new Paiement($resa->reference);        
         $this->assertFalse($paiement->needCheckHA());
     }
 
@@ -56,7 +56,7 @@ class PaiementTest extends TestCase
     {
         $resa = Reservations::factory()->create((['paiement_state'=> Reservations::PAIEMENT_STATE_A_PAYER,
                                                   'state' => Reservations::STATE_PAIEMENT]));        
-        $paiement = new Paiement($resa->id);
+        $paiement = new Paiement($resa->reference);
         
         $this->assertTrue($paiement->checkCash());
         $this->assertEquals(Reservations::STATE_CONFIRME,$paiement->getResa()->state);
@@ -73,7 +73,7 @@ class PaiementTest extends TestCase
     {
         $resa = Reservations::factory()->create((['paiement_state'=> Reservations::PAIEMENT_STATE_NON_PAYE,
                                                   'state' => Reservations::STATE_PAIEMENT]));        
-        $paiement = new Paiement($resa->id);
+        $paiement = new Paiement($resa->reference);
         $this->assertTrue($paiement->checkCash());
         $this->assertEquals(Reservations::STATE_PAIEMENT,$paiement->getResa()->state);
         $this->assertEquals("Succès",$paiement->getLastError());
@@ -95,7 +95,7 @@ class PaiementTest extends TestCase
         $responseHA = json_decode($str,true);
         
         $resa = Reservations::factory()->create((['state'=> Reservations::STATE_PAIEMENT]));        
-        $paiement = new Paiement($resa->id);        
+        $paiement = new Paiement($resa->reference);        
         $this->assertTrue($paiement->checkHA($responseHA));
         $this->assertEquals(Reservations::STATE_CONFIRME,$paiement->getResa()->state);
         $this->assertEquals(Reservations::PAIEMENT_STATE_HA_PAYE,$paiement->getResa()->paiement_state);
@@ -118,7 +118,7 @@ class PaiementTest extends TestCase
         $responseHA = json_decode($str,true);
         
         $resa = Reservations::factory()->create((['state'=> Reservations::STATE_PAIEMENT]));        
-        $paiement = new Paiement($resa->id);        
+        $paiement = new Paiement($resa->reference);        
         $this->assertFalse($paiement->checkHA($responseHA));
         $this->assertEquals(Reservations::STATE_PAIEMENT,$paiement->getResa()->state);
         $this->assertEquals("Paiement non validé",$paiement->getLastError());
@@ -136,7 +136,7 @@ class PaiementTest extends TestCase
         $responseHA = json_decode($str,true);
         
         $resa = Reservations::factory()->create((['state'=> Reservations::STATE_PAIEMENT]));        
-        $paiement = new Paiement($resa->id);        
+        $paiement = new Paiement($resa->reference);        
         $this->assertFalse($paiement->checkHA($responseHA));
         $this->assertEquals(Reservations::STATE_PAIEMENT,$paiement->getResa()->state);
         $this->assertEquals("Paiement non effectué",$paiement->getLastError());
@@ -149,7 +149,7 @@ class PaiementTest extends TestCase
     public function test_checkHa_reponse_non_prevue() : void
     {
         $resa = Reservations::factory()->create((['state'=> Reservations::STATE_PAIEMENT]));        
-        $paiement = new Paiement($resa->id);        
+        $paiement = new Paiement($resa->reference);        
         $this->assertFalse($paiement->checkHA([]));
         $this->assertEquals(Reservations::STATE_PAIEMENT,$paiement->getResa()->state);
         $this->assertEquals("Réponse reçue non prévue",$paiement->getLastError());

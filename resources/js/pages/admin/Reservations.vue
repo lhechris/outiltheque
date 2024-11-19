@@ -6,9 +6,10 @@
             <table v-if="reservations.length>0">
                 <tbody>
                     <tr align="left">
-                        <th>Outil</th><th>Début</th><th>Fin</th><th>Nom</th><th>Téléphone</th><th>Paiement</th><th>Statut</th><th>Commentaire</th><th></th><th></th>
+                        <th>Ref</th><th>Outil</th><th>Début</th><th>Fin</th><th>Nom</th><th>Téléphone</th><th>Paiement</th><th>Statut</th><th>Commentaire</th><th></th><th></th>
                     </tr>
                     <tr v-for="resa in reservations" class="my-2" >
+                        <td class="px-2">{{ resa.reference }} </td>
                         <td class="px-2">{{ resa.nomoutil }} </td>
                         <td><input type="date" v-model="resa.debut" class="border rounded-md"/></td>
                         <td><input type="date" v-model="resa.fin" class="border rounded-md"/></td>
@@ -42,12 +43,15 @@
                 <table v-if="historiques.length>0">
                     <tbody>
                         <tr class="text-left">
-                            <th>Outil</th><th>Début</th><th>Fin</th><th>Nom</th><th>Paiement</th><th>Statut</th><th>Commentaire</th>
+                            <th>Ref</th><th>Outil</th><th>Début</th><th>Fin</th><th>Nom</th><th>Téléphone</th><th>Paiement</th><th>Statut</th><th>Commentaire</th><th></th><th></th>
                         </tr>
                         <tr v-for="resa in historiques" class="my-2 " >
+                            <td class="px-2">{{ resa.reference }} </td>
                             <td class="px-2">{{ resa.nomoutil }} </td>
                             <td class="px-2"> {{resa.debut }}</td>
                             <td class="px-2">{{resa.fin}}</td>
+                            <td class="px-2">{{resa.nom}}</td>
+                            <td class="px-2">{{resa.telephone}}</td>
                             <td class="px-2">{{ resa.paiement_state }}</td>
                             <td class="px-2">{{ resa.state }}</td>
                             <td class="px-2">{{resa.commentaire}}</td>  

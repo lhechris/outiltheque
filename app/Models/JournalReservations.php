@@ -10,6 +10,7 @@ class JournalReservations extends Model
     use HasFactory;
 
     protected $fillable = [
+        'reference',
         'outil_id',
         'nom',
         'email',

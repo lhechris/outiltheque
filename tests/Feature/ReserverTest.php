@@ -50,7 +50,7 @@ class ReserverTest extends TestCase
       $this->assertEquals(Reservations::PAIEMENT_STATE_NON_PAYE,$resa->paiement_state);
 
       //Paiement cash
-      $response = $this->put("/api/cash/$resa->id");
+      $response = $this->put("/api/cash/$resa->reference");
       $response->assertStatus(202);        
       $response->assertJson(['status' => true, "data" => $data]);
 
@@ -60,7 +60,7 @@ class ReserverTest extends TestCase
       $this->assertEquals(Reservations::PAIEMENT_STATE_A_PAYER,$resa->paiement_state);
 
       //Verifie pour confirmer
-      $response = $this->get("/api/checkpaiement/$resa->id");
+      $response = $this->get("/api/checkpaiement/$resa->reference");
       $response->assertStatus(200);        
       $response->assertJson(['status' => true, "data" => $data]);
 
@@ -121,7 +121,7 @@ class ReserverTest extends TestCase
             ]);
 
 
-      $response = $this->get("/api/encaissement/$resa->id");
+      $response = $this->get("/api/encaissement/$resa->reference");
       $response->assertStatus(200);        
       $response->assertJson(['status' => true, "data" => $expected]);
 
@@ -144,7 +144,7 @@ class ReserverTest extends TestCase
             'https://api.helloasso-sandbox.com/v5/organizations/labobinette/checkout-intents/31270' => Http::response($expected, 200)
             ]);
 
-      $response = $this->get("/api/checkpaiement/$resa->id");
+      $response = $this->get("/api/checkpaiement/$resa->reference");
       $response->assertStatus(200);        
       $response->assertJson(['status' => true, "data" => $data]);
 
