@@ -1,6 +1,4 @@
 <template>
-
- 
   
     <!-- Title -->
     <div class="pt-14  bg-white">

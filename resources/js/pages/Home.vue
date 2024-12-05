@@ -3,9 +3,18 @@
       <!--  <profile user="user"></profile>-->
       <div>
             <div class="mb-4 border-b border-gray-200 dark:border-gray-700">
-                <ul class="flex items-center flex-shrink-0 px-5 py-3 space-x-2text-gray-600" >
+                <ul class="flex flex-wrap items-center  overflow-x-auto overflow-y-hidden py-10 justify-center   bg-white text-gray-800" >
+                <!--<ul class="flex items-center flex-shrink-0 px-5 py-3 space-x-2text-gray-600" >-->
                     <li v-for="(cat,idx) in categories" :key="idx" class="me-2" role="presentation" >
-                        <button :class="'inline-block p-4 border-b-2 rounded-t-lg'+'hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300'" 
+                        <button class="inline-block 
+                                       p-4
+                                       px-1
+                                       sm:px-4
+                                       border-b-2 
+                                       rounded-t-lg 
+                                       hover:text-red-600 
+                                       hover:border-gray-300 
+                                       dark:hover:text-red-300" 
                                 id="profile-tab" 
                                 data-tabs-target="#profile" 
                                 type="button" role="tab" 

@@ -100,6 +100,34 @@ class Reservations extends Model
         return $this->dateToFrench($this->fin,'l j F Y');
     }
 
+    public static function listeResaSemaine() {
+        $startweek = now()->StartOfWeek()->format('Y-m-d');
+        $endweek = now()->EndOfWeek()->format('Y-m-d');
+
+        //\DB::enableQueryLog();
+        $data = self::leftjoin("outils","reservations.outil_id","=","outils.id")
+                      ->select("reservations.*","outils.nom as nomoutil")
+                      ->whereBetween("debut", [$startweek,$endweek])
+                      ->get();
+        //echo $now->format('Y-m-d');
+        //print_r(\DB::getQueryLog(),false);
+        return $data;        
+    }
+
+    public static function listeRetourSemaine() {
+        $startweek = now()->StartOfWeek()->format('Y-m-d');
+        $endweek = now()->EndOfWeek()->format('Y-m-d');
+        
+        //\DB::enableQueryLog();
+        $data = self::leftjoin("outils","reservations.outil_id","=","outils.id")
+                      ->select("reservations.*","outils.nom as nomoutil")
+                      ->whereBetween("fin", [$startweek,$endweek])
+                      ->get();
+        //echo $now->format('Y-m-d');
+        //print_r(\DB::getQueryLog(),false);
+        return $data;        
+    }
+
 }
 
 

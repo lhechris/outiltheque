@@ -55,8 +55,7 @@ class Paiement {
                 \Log::info("On envoi le mail a ".$this->resa->email);
                 \Log::info("Status = ".Reservations::STATE_CONFIRME." Paiement status=".Reservations::PAIEMENT_STATE_A_PAYER);
                 Mail::to($this->resa->email)->send(new ConfirmResa($this->resa));
-                //Mail::to("labo.binette31@gmail.com")->send(new NewResaForAdmin($this->resa));
-                Mail::to("lhechris@gmail.com")->send(new NewResaForAdmin($this->resa));
+                Mail::to(env('MAIL_RESPONSABLE_RESA',''))->send(new NewResaForAdmin($this->resa));
                 $this->resa->state=Reservations::STATE_CONFIRME;
                 $this->resa->update();
             }

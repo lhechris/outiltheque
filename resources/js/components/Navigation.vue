@@ -20,8 +20,11 @@
           <svg class="h-6 w-6" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"></path></svg>
         </button>-->
       </div>
-      <div class="w-full items-center justify-between md:order-1 md:flex md:w-auto" id="navbar-sticky">
-        <ul class="mt-4 flex flex-row rounded-lg border border-gray-100 bg-gray-50 p-4 md:mt-0 md:flex-row md:space-x-8 md:border-0 md:bg-white md:text-sm md:font-medium">
+      <div class="items-center justify-between md:order-1 md:block md:w-auto" id="navbar-sticky">
+        <ul class="mt-4   flex flex-row rounded-lg border border-gray-100 bg-gray-50 p-4 
+                  md:mt-0 md:flex-row md:space-x-8 md:border-0 md:bg-blue md:text-sm md:font-medium
+                  ">
+          
           <li v-for="(l,k) in menus" :index="k" >
             <router-link :to="l" class="block rounded pl-1 pr-4 md:bg-transparent md:p-0 text-blue-700" aria-current="page">{{k}}</router-link>
           </li>
