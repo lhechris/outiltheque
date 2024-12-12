@@ -63,6 +63,7 @@ class ReservationController extends Controller
                 ], 401);
             }
 
+            Reservations::purge();
 
             if (Reservations::est_possible($request->outil_id,$request->debut,$request->fin)) {
                 $req = $request->all();

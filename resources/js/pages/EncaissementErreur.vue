@@ -74,7 +74,7 @@
         try {            
             const req = await request('delete', '/api/reservations/'+props.resaid)
             if (req.status == 200 ){
-                router.push("/")
+                router.push("/home")
             }
 
         } catch (e) {
@@ -108,7 +108,7 @@
         message.value = null
         paiementCash(resa.value.reference,message.value,erreur.value)
         .then(() => {
-            router.push("/")    
+            router.push("/home")    
         }).catch(err => {
             console.log(err)
             erreur.value = err.message
@@ -121,7 +121,7 @@
         message.value = null
         paiementCancel(resa.value.reference)
         .then(() => {
-            router.push("/")    
+            router.push("/home")    
         }).catch(err => {
             console.log(err)
             erreur.value = err.message

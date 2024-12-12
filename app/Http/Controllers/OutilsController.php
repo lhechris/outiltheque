@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Outils;
 use App\Models\File;
 use App\Models\Caracoutils;
+use App\Models\Reservations;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -86,6 +87,9 @@ class OutilsController extends Controller
      */
     public function show($id): \Illuminate\Http\JsonResponse
     {
+        //Purge les reservations
+        Reservations::purge();
+
         //$response = Outils::findOrFail($id);
         $response = Outils::leftjoin("files","outils.file_id","=","files.id")
                         ->leftjoin("categories","outils.categorie_id","=","categories.id")
@@ -94,8 +98,6 @@ class OutilsController extends Controller
 
         //Get all caracteristiques
         $caract=Caracoutils::where("outil_id","=",$id);
-
-
 
         $data = $response->first();
 

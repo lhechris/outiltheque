@@ -5,6 +5,7 @@ namespace Tests\Feature;
 // use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use App\Models\Outils;
+use App\Models\Reservations;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 // Atention pour eviter l'erreur : Vite manifest not found at
@@ -66,5 +67,20 @@ class OutilsTest extends TestCase
     Route::delete('outils/{outil}', [OutilsController::class,'destroy'])->middleware('auth:sanctum','role:admin');
 */
 
-    
+    /**
+     * Tester que les reservations dans un etat transitoire de plus de 15min sont purgées
+     * Route::get('outils/{outil}', [OutilsController::class,'show']);
+     */
+    public function test_purge_reservations_during_getting_outils() : void
+    {
+        $outil=Outils::factory()->create();
+        Reservations::factory()->create(["updated_at"=>now()->subMinutes(16)]);
+        $response = $this->get('/api/outils/'.$outil->id);
+        $response->assertStatus(200);        
+
+        $resas = Reservations::get();
+        $this->assertCount(0,$resas);
+    }
+
+
 }

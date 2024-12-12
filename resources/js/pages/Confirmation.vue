@@ -52,7 +52,7 @@ const handleResa = async () => {
     }
 
     function back() {
-        router.push("/")
+        router.push("/home")
     }
     
 

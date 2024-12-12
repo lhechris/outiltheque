@@ -19,7 +19,8 @@
                             v-model:telephone="telephone"
                             v-model:debut="debut"
                             v-model:fin="fin"
-                            v-model:email="email" ></info-resa>
+                            v-model:email="email"
+                            v-model:reglement="reglement" ></info-resa>
                     <div class="flex flex-row gap-4 pb-10" data-test="inforesa">
                         <button type="button" 
                             class="rounded-lg border border-blue-500 bg-blue-500 px-5 py-2.5 text-center text-sm font-medium text-white shadow-sm transition-all hover:border-blue-700 hover:bg-blue-700 focus:ring focus:ring-blue-200 disabled:cursor-not-allowed disabled:border-blue-300 disabled:bg-blue-300"
@@ -60,6 +61,7 @@
     const nom = defineModel('nom')
     const telephone = defineModel('telephone')
     const email = defineModel('email')
+    const reglement = defineModel('reglement')
 
     const resa = ref(0)
 
@@ -90,6 +92,11 @@
 
         if (! validateTel(telephone.value)) {
             erreur.value = "Mauvais numéro de téléphone"
+            return
+        }
+
+        if (! reglement.value) {
+            erreur.value = "Vous devez accepter le réglement"
             return
         }
 
@@ -157,7 +164,7 @@
         message.value = null
         paiementCancel(resa.value.reference)
         .then(() => {
-            router.push("/")    
+            router.push("/home")    
         }).catch(err => {
             console.log(err)
             erreur.value = err.message
@@ -166,7 +173,7 @@
     }    
 
     function annuler() {
-        router.push('/')
+        router.push('/home')
     }
 
     const handleOutils = async () => {

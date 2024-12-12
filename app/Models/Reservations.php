@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
+use App\Models\JournalReservations;
 
 class Reservations extends Model
 {
@@ -126,6 +127,36 @@ class Reservations extends Model
         //echo $now->format('Y-m-d');
         //print_r(\DB::getQueryLog(),false);
         return $data;        
+    }
+
+    /**
+     * Supprime les réservations non confirmées et trop vieilles
+     */
+    public static function purge() {
+ 
+        $fin = now()->subMinutes(15)->format('Y-m-d H:i:s');
+        $data = self::where("state","=",self::STATE_RESERVE)
+                    ->where("updated_at","<=",$fin)
+                    ->get();
+
+        foreach ($data as $d) {
+            $d->delete();            
+        }
+    }
+
+        /**
+     * Supprime les réservations non confirmées et trop vieilles
+     */
+    public static function historise() {
+ 
+        $fin = now()->format('Y-m-d');
+        $data = self::where("fin","<",$fin)
+                    ->get();
+
+        foreach ($data as $d) {
+            JournalReservations::create($d->toArray());
+            $d->delete();            
+        }
     }
 
 }

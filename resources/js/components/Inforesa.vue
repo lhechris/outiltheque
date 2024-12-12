@@ -45,6 +45,12 @@
                         class="block border rounded-md border-gray-300 shadow-sm focus:border-blue-400 pl-1 focus:ring focus:ring-blue-200 focus:ring-opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500" 
                         placeholder="Votre Email" />
             </div>       
+            <div>
+                <div class="flex items-center mb-4">
+                    <input id="default-checkbox" type="checkbox" v-model="reglement" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                    <label for="default-checkbox" class="ms-2 text-sm font-medium ">En cochant cette case, j'accepte le <a target="_blank" class="text-blue-600" href="/storage/uploads/Règlement intérieur de l’outilthèque.pdf" >réglement de l'outilthèque.</a></label>
+                </div>
+            </div>       
         </div>
     </div>
     <div v-else>Rien</div>
@@ -74,6 +80,7 @@
     const nom = defineModel('nom')
     const telephone = defineModel("telephone")
     const email = defineModel('email')
+    const reglement = defineModel('reglement')
 
     const props = defineProps(['outil'])
 
@@ -85,15 +92,12 @@
         nom.value = ""
         telephone.value=""
         email.value = ""
+        reglement.value = false
     });
 
     function changedebut() {
-        console.log(datedebut.value)
         debut.value = datedebut.value
         fin.value = moment(datedebut.value).add(6, 'days').format("YYYY-MM-DD")
-
-        console.log(fin.value)
-        
     }
 
 </script>

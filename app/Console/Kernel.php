@@ -14,6 +14,7 @@ class Kernel extends ConsoleKernel
     {
         // $schedule->command('inspire')->hourly();
         $schedule->command('app:mail-week')->weeklyOn(3, '8:00');
+        $schedule->command('app:purge-resas')->weeklyOn(4,'00:01');
     }
 
     /**
