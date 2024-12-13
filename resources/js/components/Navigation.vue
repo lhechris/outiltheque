@@ -1,7 +1,7 @@
 <template>
     <nav class="fixed top-0 left-0 z-20 w-full border-b border-gray-200 bg-white py-2.5 px-6 sm:px-4">
     <div class="container mx-auto flex max-w-6xl flex-wrap items-center justify-between">
-      <a href="/home" class="hidden md:flex items-center md:w-auto">
+      <a href="/home" class="flex items-center w-auto">
         <img class="max-h-12" src="/storage/app/images/LB_logo_2.png" />
   
         <span class="self-center whitespace-nowrap text-xl font-semibold p-2">Outilthèque</span>
