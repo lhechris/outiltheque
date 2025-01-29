@@ -285,38 +285,7 @@ class HelloassoController extends Controller
      */    
     private function refreshToken()
     {
-        $data = Helloasso::where('nom','=',env('HELLOASSO_KEY_CLIENT_ID',''))->first();
-        $clientId = $data->valeur;
-
-        $data = Helloasso::where('nom','=',env('HELLOASSO_KEY_REFRESH_TOKEN',''))->first();
-        $refreshtoken = $data->valeur;
-
-        $details = ['grant_type' => 'refresh_token',
-                    'client_id' => $clientId,
-                    'refresh_token' => $refreshtoken];
-        try {
-            $response = Http::asForm()->post(env('HELLOASSO_AUTH_URL',''), $details);
-        
-            \Log::info("réponse : ".$response->status());
-            \Log::info($response->body());
-
-            if ($response->ok()) {
-                $token = $response->json();
-                $data = Helloasso::where('nom','=',env('HELLOASSO_KEY_ACCESS_TOKEN',''))->first();
-                $data->valeur = $token['access_token'];
-                $data->update();
-                $data = Helloasso::where('nom','=',env('HELLOASSO_KEY_REFRESH_TOKEN',''))->first();
-                $data->valeur = $token['refresh_token'];
-                $data->update();
-            }
-            else {
-                echo 'Unexpected HTTP status: ' . $response->status() . ' ' . $response->body();
-            }
-        }
-        catch(\HTTP_Request2_Exception $e)
-        {
-            echo 'Error: ' . $e->getMessage();
-        }
+        Helloasso::refreshToken();
     }
 
 
