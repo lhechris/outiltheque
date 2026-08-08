@@ -16,7 +16,18 @@
                 required
                 autofocus
                 autocomplete="name"
-                :placeholder="__('Full name')"
+                :placeholder="__('Lastname')"
+            />
+            <!-- Firstname -->
+            <flux:input
+                name="firstname"
+                :label="__('Firstname')"
+                :value="old('firstname')"
+                type="text"
+                required
+                autofocus
+                autocomplete="firstname"
+                :placeholder="__('Firstname')"
             />
 
             <!-- Email Address -->
@@ -28,6 +39,18 @@
                 required
                 autocomplete="email"
                 placeholder="email@example.com"
+            />
+
+            <!-- Phone -->
+            <flux:input
+                name="phone"
+                :label="Téléphone"
+                :value="old('phone')"
+                type="text"
+                required
+                autofocus
+                autocomplete="phone"
+                :placeholder="Téléphone"
             />
 
             <!-- Password -->

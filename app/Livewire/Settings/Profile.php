@@ -16,6 +16,8 @@ class Profile extends Component
     use ProfileValidationRules;
 
     public string $name = '';
+    public string $firstname = '';
+    public string $phone = '';
 
     public string $email = '';
 
@@ -25,6 +27,8 @@ class Profile extends Component
     public function mount(): void
     {
         $this->name = Auth::user()->name;
+        $this->firstname = Auth::user()->firstname;
+        $this->phone = Auth::user()->phone?:'';
         $this->email = Auth::user()->email;
     }
 
@@ -56,7 +60,7 @@ class Profile extends Component
         $user = Auth::user();
 
         if ($user->hasVerifiedEmail()) {
-            $this->redirectIntended(default: route('dashboard', absolute: false));
+            $this->redirectIntended(default: route('tools.index', absolute: false));
 
             return;
         }
