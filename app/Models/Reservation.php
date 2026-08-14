@@ -25,6 +25,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 class Reservation extends Model
 {
     public const PAYMENT_STATE_UNPAID = "Non payé";
+    public const PAYMENT_STATE_FORFAIT = "Forfait";
     public const PAYMENT_STATE_TO_PAY = "A payer";
     public const PAYMENT_STATE_HA_PENDING = "helloasso en cours";
     public const PAYMENT_STATE_HA_PAYED = "Payé Helloasso";
@@ -212,8 +213,21 @@ class Reservation extends Model
             self::PAYMENT_STATE_TO_PAY => "A payer",
             self::PAYMENT_STATE_HA_PENDING => "helloasso en cours",
             self::PAYMENT_STATE_HA_PAYED => "Payé Helloasso",
-            self::PAYMENT_STATE_PAYED => "Payé en espèce"
+            self::PAYMENT_STATE_PAYED => "Payé en espèce",
+            self::PAYMENT_STATE_FORFAIT => "Forfait",
         ];
+    }
+
+    public static function GetpaymentStateColor($state): string
+    {
+        return match ($state) {
+            self::PAYMENT_STATE_UNPAID => 'red',
+            self::PAYMENT_STATE_TO_PAY => 'amber',
+            self::PAYMENT_STATE_HA_PENDING => 'amber',
+            self::PAYMENT_STATE_HA_PAYED, Reservation::PAYMENT_STATE_PAYED => 'emerald',
+            self::PAYMENT_STATE_FORFAIT => 'indigo',
+            default => 'gray',
+        };
     }
 
 }

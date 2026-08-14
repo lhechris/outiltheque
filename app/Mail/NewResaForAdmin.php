@@ -16,14 +16,13 @@ class NewResaForAdmin extends Mailable
 {
     use Queueable, SerializesModels;
 
+    public ?int $amount;
     /**
      * Create a new message instance.
      */
-    public function __construct(
-        protected Reservation $resa
-         )
+    public function __construct(protected Reservation $resa,int $amount=null )
     {
-        //
+        $this->amount = $amount;
     }
 
     /**
@@ -49,7 +48,7 @@ class NewResaForAdmin extends Mailable
                     'outil' => $this->resa->tool->name,
                     'debut' => \Carbon\Carbon::parse($this->resa->date_start)->translatedFormat('l d F'),
                     'fin' => \Carbon\Carbon::parse($this->resa->date_end)->translatedFormat('l d F'),
-                    'prix' => $this->resa->tool->contract->price,
+                    'prix' => $this->amount,
                     'paiement' =>$this->resa->payment_state,
                     'reference' => $this->resa->reference
                 ]

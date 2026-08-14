@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Http;
 class Payment {
 
     //Initialise un ordre de paiement
-    static public function init(Reservation $reservation ) : bool {
+    static public function init(Reservation $reservation, int $amount ) : bool {
 
         \Log::info($reservation->reference." Demande encaissement Helloaso ".$reservation->tool->name.' pour '.$reservation->name.' '.$reservation->email);
 
@@ -21,8 +21,8 @@ class Payment {
         $baseurl = "https://outiltheque.labo-binette.fr";
 
         $details= [
-            "totalAmount" => $reservation->tool->contract->price*100,
-            "initialAmount" => $reservation->tool->contract->price*100,
+            "totalAmount" => $amount*100,
+            "initialAmount" => $amount*100,
             "itemName" => "Location ".$reservation->reference."(".$reservation->tool->name.")",
             "backUrl" => $baseurl."/payments/error/".$reservation->reference,
             "errorUrl" => $baseurl."/payments/error/".$reservation->reference,

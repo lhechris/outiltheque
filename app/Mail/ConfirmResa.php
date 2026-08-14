@@ -17,12 +17,15 @@ class ConfirmResa extends Mailable
 {
     use Queueable, SerializesModels;
 
+    private ?int $amount;
+
     /**
      * Create a new message instance.
      */
-    public function __construct(protected Reservation $resa)
+    public function __construct(protected Reservation $resa, int $amount=null)
     {
-        //
+        $this->amount = $amount;
+        \Log::debug("contructeur");
     }
 
     /**
@@ -30,6 +33,7 @@ class ConfirmResa extends Mailable
      */
     public function envelope(): Envelope
     {
+        \Log::debug("envelope");
         return new Envelope(
             from: new Address('labobinette@machris.fr', 'Outiltheque de labo binette'),
             subject: 'Confirmation Reservation',
@@ -41,7 +45,8 @@ class ConfirmResa extends Mailable
      */
     public function content(): Content
     {
-        if ($this->resa->isToPay()) {
+        \Log::debug("cnotent");
+        if ($this->amount) {
             return new Content(
                 view: 'emails.confirmtopay',
                 with : [ 
@@ -49,7 +54,7 @@ class ConfirmResa extends Mailable
                     'outil' => $this->resa->tool->name,
                     'debut' => $this->resa->date_start,
                     'fin' => $this->resa->date_end,
-                    'prix' => $this->resa->tool->contract->price,
+                    'prix' => $this->amount,
                     'reference' => $this->resa->reference
                 ]
             );

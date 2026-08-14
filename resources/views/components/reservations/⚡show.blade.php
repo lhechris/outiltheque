@@ -133,15 +133,23 @@ new class extends Component {
                             <dd class="text-gray-900">{{ $reservation->tool?->category?->name }}</dd>
                         </div>
                         <div class="flex justify-between">
-                            <dt class="text-gray-500">Tarif</dt>
+                            <dt class="text-gray-500">Tarif unité</dt>
                             <dd class="text-gray-900">
                                 @if ($reservation->tool?->contract)
-                                    {{ number_format($reservation->tool->contract->price, 2, ',', ' ') }} €
+                                    {{ number_format($reservation->tool->contract->unit, 2, ',', ' ') }} €
                                 @endif
                             </dd>
                         </div>
                         <div class="flex justify-between">
-                            <dt class="text-gray-500">Stock dispo</dt>
+                            <dt class="text-gray-500">Tarif forfait</dt>
+                            <dd class="text-gray-900">
+                                @if ($reservation->tool?->contract)
+                                    {{ number_format($reservation->tool->contract->flat_rate, 2, ',', ' ') }} €
+                                @endif
+                            </dd>
+                        </div>
+                        <div class="flex justify-between">
+                            <dt class="text-gray-500">Stock</dt>
                             <dd class="text-gray-900">{{ $reservation->tool?->number }}</dd>
                         </div>
                     </dl>

@@ -45,38 +45,8 @@ new class extends Component
                 ->when($this->search, fn ($q) => $q->where('name', 'like', "%{$this->search}%"))
                 ->orderBy('name')
                 ->get(),
-            'currentTool' => $this->showToolId
-                ? Tool::with(['category', 'contract'])->find($this->showToolId)
-                : null,
         ];
     }
-
-    /** 
-        On pourrais mettre cette fonction dans le model mais il faudrait
-        déclarer @source ../App/Models/** dans app.css
-        tailwindcss scane le php pour créer les classes
-    **/
-    public function getColorClass($color): string
-    {
-        return match ($color) {
-            'purple' => 'bg-purple-400 text-purple-700',
-            'green'  => 'bg-green-400 text-green-700',
-            'red'    => 'bg-red-400 text-red-700',
-            'amber'  => 'bg-amber-400 text-amber-700',
-            'orange' => 'bg-orange-400 text-orange-700',
-            'violet' => 'bg-violet-400 text-violet-700',
-            'blue' => 'bg-blue-400 text-blue-700',
-            'yellow' => 'bg-yellow-400 text-yellow-700',
-            'lime' => 'bg-lime-400 text-lime-700',
-            'teal' => 'bg-teal-400 text-teal-700',
-            'cyan' => 'bg-cyan-400 text-cyan-700',
-            'indigo' => 'bg-indigo-400 text-indigo-700',            
-            'pink' => 'bg-pink-400 text-pink-700',            
-            'rose' => 'bg-rose-400 text-rose-700',            
-            default  => 'bg-gray-400 text-gray-700',
-        };
-    }  
-
 }
 ?>
 
@@ -153,7 +123,10 @@ new class extends Component
                         <div class="mt-3 flex items-end justify-between">
 
                             @if ($tool->contract)
-                            <p class="text-lg font-bold rounded-full {{ $this->getColorClass($tool->contract->color) }} px-2">{{ number_format($tool->contract->price, 2, ',', ' ') }}&euro;</p>
+                            <livewire:pastille color="{{$tool->contract->color}}" class="px-4 py-1 font-bold text-sm"> 
+                                <span>Unité {{ $tool->contract->unit }}&euro;</span>
+                                <span>Forfait {{ $tool->contract->flat_rate }}&euro;</span>
+                            </livewire:pastille>
                             @endif
                             <p class="text-lg font-bold text-blue-500">{{ $tool->number }} dispo</p>
                             <div class="flex items-center space-x-1.5 rounded-lg bg-blue-500 px-4 py-1.5 text-white duration-100 hover:bg-blue-600">
@@ -169,51 +142,4 @@ new class extends Component
             </div>
         @endif
     </main>
-
-    {{-- Modale détail outil --}}
-    @if ($currentTool)
-        <div class="fixed inset-0 z-50 flex items-center justify-center p-4" x-cloak>
-            <div class="absolute inset-0 bg-black/50" wire:click="closeTool"></div>
-
-            <div class="relative bg-white rounded-xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6">
-                <button wire:click="closeTool" class="absolute top-4 right-4 text-gray-400 hover:text-gray-700">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-
-                @if ($currentTool->image)
-                    <img src="{{ Storage::url($currentTool->image) }}" alt="{{ $currentTool->name }}" class="w-full h-40 object-cover rounded-lg mb-4">
-                @endif
-
-                <h3 class="text-xl font-bold text-gray-900">{{ $currentTool->name }}</h3>
-                <div class="flex gap-2 mt-2 mb-4">
-                    <span class="text-xs px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700">
-                        {{ $currentTool->category?->name }}
-                    </span>
-                    @if ($currentTool->contract)
-                        <span class="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-700">
-                            {{ number_format($currentTool->contract->price, 2, ',', ' ') }} €
-                        </span>
-                    @endif
-                </div>
-
-                <p class="text-sm text-gray-700 mb-4">{{$currentTool->description }}</p>
-
-                @if ($currentTool->advice)
-                    <div class="mb-3 p-3 rounded-lg bg-green-50 border border-green-100">
-                        <p class="text-xs font-semibold text-green-800 mb-1">Conseil</p>
-                        <p class="text-sm text-green-700" >{!! $currentTool->advice !!}</p>
-                    </div>
-                @endif
-
-                @if ($currentTool->caution)
-                    <div class="p-3 rounded-lg bg-amber-50 border border-amber-100">
-                        <p class="text-xs font-semibold text-amber-800 mb-1">Attention</p>
-                        <p class="text-sm text-amber-700">{!! $currentTool->caution !!}</p>
-                    </div>
-                @endif
-            </div>
-        </div>
-    @endif
 </div>

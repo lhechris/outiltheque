@@ -13,8 +13,10 @@ class ContractInfolist
             ->components([
                 TextEntry::make('name')
                     ->label('Nom de la catégorie'),
-                TextEntry::make('price')
-                    ->label('Prix'),
+                TextEntry::make('unit')
+                    ->label("Prix à l'unité"),
+                TextEntry::make('flat_rate')
+                    ->label("Prix au forfait"),
                 TextEntry::make('restriction')
                     ->label("Limite d'utilisation"),
                 TextEntry::make('color')

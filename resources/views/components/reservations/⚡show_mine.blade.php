@@ -3,7 +3,7 @@
 use App\Models\Reservation;
 use Illuminate\Support\Carbon;
 use Livewire\Component;
-
+use App\Services\SrvReservation;
 new class extends Component {
 
     // Route::livewire('/reservations/{reservation}', 'reservations.show');
@@ -28,13 +28,21 @@ new class extends Component {
 
     public function cancel(): void
     {
-        $this->reservation->update(['state' => 'cancelled']);
-        $this->state = 'cancelled';
+        $srv = new SrvReservation();
+        if ($srv->cancel($this->reservation)) {
+            $this->state = 'cancelled';
 
-        Flux::toast(
-            text: "Réservation {$this->reservation->reference} annulée.",
-            variant: 'warning',
-        );
+            Flux::toast(
+                text: $srv->getMessage(),
+                variant: 'success',
+            );
+        } else {
+            Flux::toast(
+                text: $srv->getMessage(),
+                variant: 'warning',
+            );
+
+        }
     }
 };
 ?>
@@ -95,10 +103,18 @@ new class extends Component {
                             <dd class="text-gray-900">{{ $reservation->tool?->category?->name }}</dd>
                         </div>
                         <div class="flex justify-between">
-                            <dt class="text-gray-500">Tarif</dt>
+                            <dt class="text-gray-500">Tarif unité</dt>
                             <dd class="text-gray-900">
                                 @if ($reservation->tool?->contract)
-                                    {{ number_format($reservation->tool->contract->price, 2, ',', ' ') }} €
+                                    {{ number_format($reservation->tool->contract->unit, 2, ',', ' ') }} €
+                                @endif
+                            </dd>
+                        </div>
+                        <div class="flex justify-between">
+                            <dt class="text-gray-500">Tarif forfait</dt>
+                            <dd class="text-gray-900">
+                                @if ($reservation->tool?->contract)
+                                    {{ number_format($reservation->tool->contract->flat_rate, 2, ',', ' ') }} €
                                 @endif
                             </dd>
                         </div>
@@ -155,7 +171,7 @@ new class extends Component {
                     wire:click="cancel"
                     wire:confirm="Confirmer l'annulation de cette réservation ?"
                     class="px-3 py-1.5 rounded-lg border border-red-200 text-red-600 text-sm font-medium hover:bg-red-50"
-                    @if ($reservation->state === 'cancelled') disabled @endif
+                    @if (!$reservation->isReserved()) hidden @endif
                 >
                     Annuler la réservation
                 </button>

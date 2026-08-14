@@ -3,6 +3,7 @@
 use Livewire\Component;
 use App\Models\Tool;
 use App\Models\Reservation;
+use App\Services\SrvReservation;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Validate;
@@ -33,7 +34,12 @@ new class extends Component
     #[Validate('accepted')]
     public $reglement;
 
+    #[Validate('required')]
+    public string $paiement;
+
     public $user;
+
+    public bool $hasForfait;
 
     public function mount()
     {
@@ -45,12 +51,22 @@ new class extends Component
             ->map(fn ($i) => $firstThursday->copy()->addWeeks($i)->format('Y-m-d'))
             ->toArray();
 
-        if (auth()) {
-            $this->user = auth()->user();
+        if (Auth::check()) {
+            $this->user = Auth::user();
             $this->name = $this->user->firstname." ".$this->user->name;
             $this->phone = $this->user->phone;
             $this->email = $this->user->email;
-        } 
+
+            $this->hasForfait = app(SrvReservation::class)->isForfait($this->user,$this->tool);
+
+            if ($this->hasForfait) {
+                $this->paiement = "forfait";
+            }
+
+        } else {
+            redirect(route("login"));
+        }
+    
 
     }
 
@@ -64,31 +80,39 @@ new class extends Component
     protected function messages()
     {
         return [
-            'date_start.required'   => 'Merci de choisir une date de récupération.',
-            'name.required'    => 'Le nom est obligatoire.',
-            'name.min'         => 'Le nom doit contenir au moins 2 caractères.',
-            'phone.required'   => 'Le téléphone est obligatoire.',
-            'phone.regex'      => 'Le numéro de téléphone n\'est pas valide.',
-            'email.required'   => 'L\'email est obligatoire.',
-            'email.email'      => 'L\'email n\'est pas valide.',
+            'date_start.required'=> 'Merci de choisir une date de récupération.',
+            'name.required'      => 'Le nom est obligatoire.',
+            'name.min'           => 'Le nom doit contenir au moins 2 caractères.',
+            'phone.required'     => 'Le téléphone est obligatoire.',
+            'phone.regex'        => 'Le numéro de téléphone n\'est pas valide.',
+            'email.required'     => 'L\'email est obligatoire.',
+            'email.email'        => 'L\'email n\'est pas valide.',
             'reglement.accepted' => 'Vous devez accepter le règlement de l\'outilthèque.',
+            'paiement.required'  => 'Merci de choisir votre type de paiement',
         ];
     }
 
-    public function reserver()
+    public function reserver(SrvReservation $srvResa)
     {
+        if (!auth()->check()) { return;}
+
         $this->validate();
-        if (!auth()) { return;}
 
-        $resa = new App\Services\SrvReservation();
+        //Si le téléphone à changé, on le met à jour
+        if ($this->phone !== $this->user->phone) {
+            $this->user->phone = $this->phone;
+            $this->user->update();
+        }
 
-        if ($resa->create($this->user,$this->tool,$this->date_start,$this->date_end,$this->comment)) {
-            session()->flash('success', $resa->getMessage());
+        if ($srvResa->create($this->user,$this->tool,$this->date_start,$this->date_end,$this->paiement,$this->comment)) {
+            \Log::debug(auth()->user()->email." Réservation OK");
+            session()->flash('success', $srvResa->getMessage());
             $this->reset(['date_start', 'date_end', 'name', 'email', 'phone', 'comment']);
-            redirect(route('payments.select',[$resa->reservation->reference]));
+            return (redirect(route('payments.select',[$srvResa->reservation->reference])));
 
         } else {
-            $this->addError('date_start',$resa->getMessage());
+            \Log::info(auth()->user()->email."erreur résa ".$srvResa->getMessage());
+            $this->addError('date_start',$srvResa->getMessage());
             return;
         }
     }
@@ -173,8 +197,7 @@ new class extends Component
             <div>
                 <label for="telephone" class="mb-1 block text-sm font-medium text-gray-700">Téléphone</label>
                 <input  type="text" 
-                        id="telephone" 
-                        disabled
+                        id="telephone"                         
                         wire:model="phone" 
                         class="block border rounded-md border-gray-300 shadow-sm focus:border-blue-400 pl-1 focus:ring focus:ring-blue-200 focus:ring-opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500" 
                         placeholder="Numéro de téléphone" />
@@ -189,7 +212,22 @@ new class extends Component
                         class="block border rounded-md border-gray-300 shadow-sm focus:border-blue-400 pl-1 focus:ring focus:ring-blue-200 focus:ring-opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500" 
                         placeholder="Votre Email" />
                 @error('email') <span class="text-red-600 text-xs">{{ $message }}</span> @enderror
-            </div>       
+            </div>
+            @if ($hasForfait)
+            <div>
+                <p>Vous avez un forfait.</p>
+            </div>
+            @else
+            <div>
+                <div class="flex items-center mb-4">
+                <flux:radio.group wire:model="paiement" label="Votre type de paiement">
+                    <flux:radio value="forfait" label="Je choisi un forfait"  />
+                    <flux:radio value="unique" label="Je paye à l'unité" />
+                </flux:radio.group>
+                </div>
+                @error('reglement') <span class="text-red-600 text-xs">{{ $message }}</span> @enderror
+            </div>
+            @endif    
             <div>
                 <div class="flex items-center mb-4">
                     <input id="default-checkbox" type="checkbox" wire:model="reglement" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">

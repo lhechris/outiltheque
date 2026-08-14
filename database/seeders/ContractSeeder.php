@@ -7,7 +7,7 @@ use Illuminate\Database\Seeder;
 
 use App\Models\Contract;
 
-class PriceSeeder extends Seeder
+class ContractSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -22,11 +22,11 @@ class PriceSeeder extends Seeder
 
         while (($row = fgetcsv($file)) !== false) {
             $data = array_combine($header, $row);
-            //name,price
-            Price::updateOrCreate(
+            Contract::updateOrCreate(
                 ['name' => $data['name']],
                 [
-                    'price' => $data['price'],
+                    'unit' => $data['unit'],
+                    'flat_rate' => $data['flat_rate'],
                     'restriction' => $data['restriction'],
                     'color' => $data['color'],
                 ]

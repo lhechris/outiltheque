@@ -36,20 +36,10 @@ class ReservationForm
                     ->required(),
                 DatePicker::make('date_end'),
                 Select::make('state')
-                    ->Options([
-                        Reservation::STATE_RESERVED => Reservation::STATE_RESERVED,
-                        Reservation::STATE_PAYMENT => Reservation::STATE_PAYMENT,
-                        Reservation::STATE_CONFIRMED => Reservation::STATE_CONFIRMED,
-                    ])
+                    ->Options(Reservation::States())
                     ->required(),
                 Select::make('payment_state')
-                    ->Options([
-                        Reservation::PAYMENT_STATE_UNPAID => Reservation::PAYMENT_STATE_UNPAID,
-                        Reservation::PAYMENT_STATE_TO_PAY => Reservation::PAYMENT_STATE_TO_PAY,
-                        Reservation::PAYMENT_STATE_HA_PENDING => Reservation::PAYMENT_STATE_HA_PENDING,
-                        Reservation::PAYMENT_STATE_HA_PAYED => Reservation::PAYMENT_STATE_HA_PAYED,
-                        Reservation::PAYMENT_STATE_PAYED => Reservation::PAYMENT_STATE_PAYED,
-                    ])
+                    ->Options(Reservation::payment_states())
                     ->required(),
                 TextInput::make('payment_id')
                     ->numeric(),

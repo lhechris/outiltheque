@@ -101,7 +101,9 @@ new class extends Component {
                             </td>
 
                             <td class="px-4 py-3 whitespace-nowrap">
-                                {{ $reservation->tool?->name }}
+                                <livewire:pastille color="{{$reservation->tool?->contract->color}}" class="border-0 py-1 pl-2.5 pr-7 text-xs font-medium">
+                                    {{$reservation->tool?->name}}
+                                </livewire:pastille>
                             </td>
 
                             <td class="px-4 py-3">
@@ -117,7 +119,11 @@ new class extends Component {
                             </td>
 
                             <td class="px-4 py-3">
-                                {{Reservation::payment_states()[$reservation->payment_state]}}
+                                <livewire:pastille 
+                                        color="{{ Reservation::getPaymentStateColor($reservation->payment_state) }}" 
+                                        class="rounded-full border-0 py-1 pl-2.5 pr-7 text-xs font-medium focus:ring-2 focus:ring-indigo-500">
+                                {{ Reservation::payment_states()[$reservation->payment_state] }}
+                                </livewire:pastille>                                
                             </td>
                         </tr>
                     @empty

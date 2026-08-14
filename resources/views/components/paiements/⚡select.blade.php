@@ -3,39 +3,68 @@
 use Livewire\Component;
 use App\Models\Reservation;
 use App\Models\Parameter;
-use App\Services\Helloasso\Payment;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\ConfirmResa;
 use App\Mail\NewResaForAdmin;
 
+use App\Services\SrvReservation;
+use App\Services\SrvPayment;
+use App\Services\Helloasso\Payment;
+
 new class extends Component
 {
     public Reservation $reservation;
+    public bool $needToPay;
 
     public function mount($ref)
     {
+        if (!auth()->check()) { return (redirect(route('login')));}
+
         $this->reservation = Reservation::where("reference","$ref")->firstOrFail();
+
+        //L'utilisateur doi être celui de la résa
+        if ($this->reservation->user_id != auth()->user()->id) {
+            \Log::info("L'utilisateur ".auth()->user()->id." a tenté la page paiement de ".$ref);
+            return (redirect(route('tools.index')));
+        }        
+        
+        $srvResa = app(SrvReservation::class);
+
+        $this->needToPay = $srvResa->needToPay($this->reservation);
     }
 
     public function handleCash() {
-        if (($this->reservation) && ($this->reservation->isReserved())) {
-
-            \Log::info("Paiement cash");
-            \Log::info("On envoi le mail a ".$this->reservation->email);
-            $this->reservation->setPaymentCash();
-            Mail::to($this->reservation->email)->send(new ConfirmResa($this->reservation));
-            Mail::to(env('MAIL_RESPONSABLE_RESA',''))->send(new NewResaForAdmin($this->reservation));            
-
-            session()->flash('message','Paiement cash sélectionné un email vous à été envoyé');
+        $srvPay = app(SrvPayment::class);
+        if ($srvPay->pay_by_cash($this->reservation)) {
+            Flux::toast(
+                text: $srvPay->getMessage(),
+                variant: 'success',
+            );
+            $this->needToPay = false;
 
         } else {
-            \Log::info("Paiement cash erreur : soit pas de réservation, soit l'état n'est pas reservé");
+            Flux::toast(
+                text: $srvPay->getMessage(),
+                variant: 'warning',
+            );
         }
-
     }
 
     public function handleHA() {
-        Payment::init($this->reservation);
+        $srvPay = app(SrvPayment::class);
+        if ($srvPay->pay_by_ha($this->reservation)) {
+            Flux::toast(
+                text: $srvPay->getMessage(),
+                variant: 'success',
+            );
+            $this->needToPay = false;
+
+        } else {
+            Flux::toast(
+                text: $srvPay->getMessage(),
+                variant: 'warning',
+            );
+        }        
     }
 
     public function handleCancel() {
@@ -51,13 +80,12 @@ new class extends Component
 ?>
 
 <div class="flex flex-col">
-    @if(($reservation) && ($reservation->isReserved()))
+    @if($needToPay)
 
         <div class="max-w-md mx-auto w-full py-6">
             <p class="text-center text-gray-700 mb-6">
                 Page Paiement de la réservation <span class="font-semibold">{{ $reservation->reference }}</span>
             </p>
-
             <div class="flex flex-col gap-3">
                 <button type="button"
                         class="w-full flex items-center justify-center rounded-lg text-center text-sm font-medium text-white shadow-sm transition-all hover:opacity-90 focus:ring focus:ring-blue-200 disabled:cursor-not-allowed disabled:border-blue-300 disabled:bg-blue-300"
@@ -81,7 +109,6 @@ new class extends Component
                 </button>
             </div>
         </div>
-
     @else
 
         <div class="max-w-md mx-auto w-full py-6">
@@ -93,16 +120,6 @@ new class extends Component
                         <p>Code réservation : <span class="font-medium">{{ $reservation->reference }}</span></p>
                         <p>Date d'emprunt : {{ \Carbon\Carbon::parse($reservation->date_start)->translatedFormat('l d F Y') }}</p>
                     </div>
-                </div>
-            @endif
-
-            @if (session()->has('message'))
-                <div class="bg-green-100 text-green-800 p-4 rounded-lg mb-4">
-                    {{ session('message') }}
-                </div>
-            @else
-                <div class="bg-red-100 text-red-800 p-4 rounded-lg mb-4">
-                    Moyen de paiement déjà validé
                 </div>
             @endif
 

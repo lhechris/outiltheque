@@ -48,3 +48,26 @@ function something()
 {
     // ..
 }
+use App\Models\Category;
+use App\Models\Contract;
+use App\Models\Tool;
+use App\Models\User;
+
+function makeTool(int $number = 1, ?Contract $contract = null): Tool
+{
+    $category = Category::factory()->create();
+    $contract ??= Contract::factory()->create();
+
+    return Tool::factory()->create([
+        'category_id' => $category->id,
+        'contract_id' => $contract->id,
+        'number'      => $number,
+    ]);
+}
+
+function makeUser(string $role = 'user'): User
+{
+    return User::factory()->create([
+        'role' => $role, // à adapter selon l'implémentation réelle de isAdmin()
+    ]);
+}

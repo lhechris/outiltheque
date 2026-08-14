@@ -44,13 +44,13 @@
             <!-- Phone -->
             <flux:input
                 name="phone"
-                :label="Téléphone"
+                label="Téléphone"
                 :value="old('phone')"
                 type="text"
                 required
                 autofocus
                 autocomplete="phone"
-                :placeholder="Téléphone"
+                placeholder="Téléphone"
             />
 
             <!-- Password -->

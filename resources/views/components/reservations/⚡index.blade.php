@@ -49,9 +49,30 @@ new class extends Component {
             })
             ->when($this->stateFilter, fn ($query) => $query->where('state', $this->stateFilter))
             ->when($this->paymentStateFilter, fn ($query) => $query->where('payment_state', $this->paymentStateFilter))
-            ->orderByDesc('date_start')
+            ->where("date_end",'>=', Carbon::now())
+            ->orderBy('date_start')
+            ->paginate(10);
+    }
+
+    #[Computed]
+    public function histo_reservations()
+    {
+        return Reservation::query()
+            ->with('tool')
+            ->when($this->search, function ($query) {
+                $query->where(function ($q) {
+                    $q->where('reference', 'like', "%{$this->search}%")
+                        ->orWhere('name', 'like', "%{$this->search}%")
+                        ->orWhere('email', 'like', "%{$this->search}%");
+                });
+            })
+            ->when($this->stateFilter, fn ($query) => $query->where('state', $this->stateFilter))
+            ->when($this->paymentStateFilter, fn ($query) => $query->where('payment_state', $this->paymentStateFilter))
+            ->where("date_end",'<', Carbon::now())
+            ->orderBy('date_start')
             ->paginate(15);
     }
+
 
     /**
      * Initialise le tableau $edited pour une réservation donnée
@@ -184,7 +205,9 @@ new class extends Component {
                             </td>
 
                             <td class="px-4 py-3 whitespace-nowrap">
+                                <livewire:pastille color="{{$reservation->tool->contract->color}}" class="border-0 py-1 pl-2.5 pr-7 text-xs font-medium">
                                 {{ $reservation->tool?->name }}
+                                </livewire:pastille>
                             </td>
 
                             <td class="px-4 py-3">
@@ -254,6 +277,73 @@ new class extends Component {
 
         <div class="mt-4">
             {{ $this->reservations->links() }}
+        </div>
+
+        <!-- HISTORIQUE -->
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-semibold text-gray-900">Historique des réservations</h2>
+            <span class="text-sm text-gray-500">{{ $this->histo_reservations->total() }} réservation(s)</span>
+        </div>
+
+        {{-- Tableau --}}
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 text-sm">
+                <thead class="bg-gray-50">
+                    <tr class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th class="px-4 py-3">Référence</th>
+                        <th class="px-4 py-3">Outil</th>
+                        <th class="px-4 py-3">Client</th>
+                        <th class="px-4 py-3">Début</th>
+                        <th class="px-4 py-3">Fin</th>
+                        <th class="px-4 py-3">État</th>
+                        <th class="px-4 py-3">Paiement</th>
+                        <th class="px-4 py-3"></th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    @forelse ($this->histo_reservations as $reservation)
+                        <tr>
+                            <td class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap">
+                               <a href="{{route('reservations.show',["reservation"=>$reservation->id])}}"> {{ $reservation->reference }} </a>
+                            </td>
+
+                            <td class="px-4 py-3 whitespace-nowrap">
+                                {{ $reservation->tool?->name }}
+                            </td>
+
+                            <td class="px-4 py-3">
+                                <div class="text-gray-900">{{ $reservation->name }}</div>
+                                <div class="text-xs text-gray-500">{{ $reservation->email }}</div>
+                            </td>
+
+                            <td class="px-4 py-3">
+                                {{ Carbon::parse($reservation->date_start)->translatedFormat('d/m/Y') }}
+                            </td>
+
+                            <td class="px-4 py-3 text-gray-500 whitespace-nowrap">
+                                {{ Carbon::parse($reservation->date_end)->translatedFormat('d/m/Y') }}
+                            </td>
+
+                            <td class="px-4 py-3">
+                                {{Reservation::states()[$reservation->state]}}
+                            </td>
+
+                            <td class="px-4 py-3">
+                                {{Reservation::payment_states()[$reservation->payment_state]}}
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="9" class="px-4 py-10 text-center text-gray-500">
+                                Aucune réservation trouvée.
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+        <div class="mt-4">
+            {{ $this->histo_reservations->links() }}
         </div>
     </main>
 </div>

@@ -16,8 +16,13 @@ class ContractForm
                 TextInput::make('name')
                     ->label('Nom de la catégorie')
                     ->required(),
-                TextInput::make('price')
-                    ->label('Prix')
+                TextInput::make('unit')
+                    ->label("Prix à l'unité")
+                    ->integer()
+                    ->required(),
+                TextInput::make('flat_rate')
+                    ->label('Prix au forfait')
+                    ->integer()
                     ->required(),
                 TextInput::make('restriction')
                     ->label("Limite d'utilisation")
@@ -27,18 +32,19 @@ class ContractForm
                     ->options([
                         'red'    => 'Rouge',
                         'orange' => 'Orange',
-                        "amber" => "Ambre",
+                        "amber"  => "Ambre",
                         'yellow' => 'Jaune',
                         'lime'   => 'Citron vert',
                         'green'  => 'Vert',
+                        'emerald'=> "Emeraude",
                         'teal'   => 'Turquoise',
                         'cyan'   => 'Cyan',
                         'blue'   => 'Bleue',
                         'indigo' => 'Indigo',
                         'violet' => 'Violet',
                         'purple' => 'Pourpre',
-                        'pink' => 'Rose',
-                        'rose' => 'Rouge pale',
+                        'pink'   => 'Rose',
+                        'rose'   => 'Rouge pale',
                     ])
                     ->required(),
             ]);

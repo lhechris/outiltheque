@@ -18,12 +18,12 @@ class ContractsTable
                 TextColumn::make('name')
                     ->label("Nom de la catégorie")
                     ->searchable(),
-                TextColumn::make('price')
-                    ->label('Prix')
-                    ->searchable(),
+                TextColumn::make('unit')
+                    ->label("Prix à l'unité"),
+                TextColumn::make('flat_rate')
+                    ->label("Prix au forfait"),
                 TextColumn::make('restriction')
-                    ->label("Limite d'utilisation")
-                    ->searchable(),
+                    ->label("Limite d'utilisation"),
                 TextColumn::make('color')
                     ->label('Couleur'),
             ])
