@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Tools\Schemas;
 
 use Filament\Infolists\Components\IconEntry;
 use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Components\ViewEntry;
 use Filament\Schemas\Schema;
 
 class ToolInfolist
@@ -12,7 +13,7 @@ class ToolInfolist
     {
         return $schema
             ->components([
-                TextEntry::make('category_id')
+            /*    TextEntry::make('category_id')
                     ->numeric(),
                 TextEntry::make('name'),
                 TextEntry::make('description')
@@ -30,7 +31,9 @@ class ToolInfolist
                     ->placeholder('-'),
                 TextEntry::make('updated_at')
                     ->dateTime()
-                    ->placeholder('-'),
+                    ->placeholder('-'),*/
+                ViewEntry::make('custom')
+                    ->view('filament.tool')
             ]);
     }
 }

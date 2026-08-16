@@ -69,7 +69,14 @@ class User extends Authenticatable implements FilamentUser
     }
 
     public function contracts() :BelongsToMany {
-        return $this->belongsToMany(Contract::class)->withPivot('payment_state');
+        return $this->belongsToMany(Contract::class)
+            ->wherePivot('expire', '>=', now())
+            ->withPivot('payment_state');
+    }
+
+    public function allcontracts() :BelongsToMany {
+        return $this->belongsToMany(Contract::class)
+            ->withPivot('payment_state','expire');
     }
 
     public function isAdmin() : bool 

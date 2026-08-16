@@ -6,7 +6,6 @@ use Illuminate\Support\Facades\Mail;
 use App\Mail\ConfirmResa;
 use App\Mail\NewResaForAdmin;
 use App\Models\Contract;
-use App\Models\JournalReservation;
 use App\Models\Reservation;
 use App\Models\Tool;
 use App\Models\User;
@@ -82,9 +81,11 @@ class SrvReservation
                     \Log::info("Le forfait est payé (ou en cours de paiement) on confirme la résa de $user->email");
                     if ($ps !== Reservation::PAYMENT_STATE_UNPAID) {
                         $state = Reservation::STATE_CONFIRMED;
+                        \Log::info("Le contrat pour $user->email est payé");
                     }
                 } else {
                     //pas de contract pour cet user, il sera cree dans SrvPayment
+                    \Log::info("Pas de contrat pour $user->email");
                 }
             }
 
@@ -128,8 +129,7 @@ class SrvReservation
         if (auth()->user()->isAdmin()) {
             \Log::info("{$this->reservation->reference} Annulation de la resa par admin");
             $this->reservation->state = Reservation::STATE_CANCELLED;
-            $this->createJournal();
-            $this->reservation->delete();
+            $this->reservation->setCancelled();
 
             $this->message = "Succès annulation de la réservation";
             return true;
@@ -138,8 +138,7 @@ class SrvReservation
         if (auth()->user()->id === $this->reservation->user->id && $this->reservation->isReserved()) {
             \Log::info("{$this->reservation->reference} Annulation de la resa par {$this->reservation->user->firstname} {$this->reservation->name}");
             $this->reservation->state = Reservation::STATE_CANCELLED;
-            $this->createJournal();
-            $this->reservation->delete();
+            $this->reservation->setCancelled();
 
             $this->message = "Succès annulation de la réservation";
             return true;
@@ -243,24 +242,5 @@ class SrvReservation
         $used = $usedQuery($ds,$de);
         return $used >= $maxQuota;
 
-    }
-
-    private function createJournal()
-    {
-        if ($this->reservation) {
-            JournalReservation::create([
-                'reference'     => $this->reservation->reference,
-                'tool_name'     => $this->reservation->tool->name,
-                'name'          => $this->reservation->name,
-                'email'         => $this->reservation->email,
-                'phone'         => $this->reservation->phone,
-                'date_start'    => $this->reservation->date_start,
-                'date_end'      => $this->reservation->date_end,
-                'state'         => $this->reservation->state,
-                'payment_state' => $this->reservation->payment_state,
-                'payment_id'    => $this->reservation->payment_id,
-                'comment'       => $this->reservation->comment,
-            ]);
-        }
     }
 }

@@ -10,6 +10,7 @@ use App\Services\Helloasso\Payment;
 use App\Services\SrvPayment;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
+use Carbon\Carbon;
 
 uses(RefreshDatabase::class);
 
@@ -39,7 +40,12 @@ beforeEach(function () {
     Mail::fake();
     config(['mail.responsable_resa' => 'admin@club.test']);
     putenv('MAIL_RESPONSABLE_RESA=admin@club.test');
+
+    // Mardi 10/06/2025, pour avoir un point de départ stable.
+    Carbon::setTestNow(Carbon::parse('2025-06-10 10:00:00'));
+
 });
+
 
 // ---------------------------------------------------------------------
 // Etats invalides / réservation non payable
@@ -172,6 +178,9 @@ it('met à jour le pivot contrat existant (UNPAID) lors d\'un paiement forfait c
 
     $reservation->user->contracts()->attach($reservation->tool->contract_id, [
         'payment_state' => Reservation::PAYMENT_STATE_UNPAID,
+        'begin' => now(),
+        'expire' => '2026-08-31',
+        'begin' => now()
     ]);
 
     $srv = new SrvPayment();
@@ -196,6 +205,8 @@ it('refuse le paiement forfait cash si le pivot contrat est déjà dans un état
 
     $reservation->user->contracts()->attach($reservation->tool->contract_id, [
         'payment_state' => Reservation::PAYMENT_STATE_HA_PAYED,
+        'expire' => '2027-08-31',
+        'begin' => now(),
     ]);
 
     $srv = new SrvPayment();
@@ -221,6 +232,8 @@ it('refuse le paiement forfait HelloAsso si le pivot contrat est déjà dans un 
 
     $reservation->user->contracts()->attach($reservation->tool->contract_id, [
         'payment_state' => Reservation::PAYMENT_STATE_PAYED,
+        'expire' => '2027-08-31',
+        'begin' => now(),
     ]);
 
     $srv = new SrvPayment();

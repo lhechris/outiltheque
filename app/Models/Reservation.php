@@ -92,33 +92,6 @@ class Reservation extends Model
         }
     }
 
-        /**
-     * Supprime les réservations non confirmées et trop vieilles
-     */
-    public static function historise() {
- 
-        $fin = now()->format('Y-m-d');
-        $data = self::where("fin","<",$fin)
-                    ->get();
-
-        foreach ($data as $d) {
-            JournalReservation::create([
-                'reference' => $d->reference,
-                'tool_name'=> $d->tool->name,
-                'name'=> $d->name,
-                'email'=> $d->email,
-                'phone'=> $d->phone,
-                'date_start'=> $d->date_start,
-                'date_end'=> $d->date_end,
-                'state'=> $d->state,
-                'payment_state'=> $d->payment_state,
-                'payment_id'=> $c->payment_id,
-                'comment'=> $c->comment,
-            ]);
-            $d->delete();          
-        }
-    }
-
     //helpers
     public function isReserved() { 
         return $this->state == Reservation::STATE_RESERVED;
@@ -129,26 +102,9 @@ class Reservation extends Model
     }
   
     // Annule une réservation
-    // Historise cette resa et la supprime
     public function setCancelled() {
         \Log::info("$this->reference Annulation de la resa");
-
-        JournalReservation::create([
-            'reference' => $this->reference,
-            'tool_name'=> $this->tool->name,
-            'name'=> $this->name,
-            'email'=> $this->email,
-            'phone'=> $this->phone,
-            'date_start'=> $this->date_start,
-            'date_end'=> $this->date_end,
-            'state'=> Reservation::STATE_CANCELLED,
-            'payment_state'=> $this->payment_state,
-            'payment_id'=> $this->payment_id,
-            'comment'=> $this->comment,
-        ]);
-
-        $this->delete();                
-
+        $this->update(["state" => Reservation::STATE_CANCELLED]);
     }
 
     public function isPayment() { 

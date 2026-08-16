@@ -16,6 +16,8 @@ return new class extends Migration
             $table->foreignId('contract_id')->constrained()->cascadeOnDelete();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->string('payment_state')->default('Non payé');
+            $table->dateTime('begin');
+            $table->dateTime('expire');
             $table->timestamps();
         });
     }

@@ -5,11 +5,13 @@ use App\Models\Contract;
 use App\Models\Reservation;
 use App\Models\Tool;
 use App\Models\User;
+use App\Models\Subscription;
 use App\Services\SrvReservation;
 use App\Mail\ConfirmResa;
 use App\Mail\NewResaForAdmin;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
+use Carbon\Carbon;
 
 use function Pest\Laravel\actingAs;
 
@@ -28,13 +30,22 @@ uses( RefreshDatabase::class);
 
 function givePaidContract(User $user, Contract $contract, string $state = Reservation::PAYMENT_STATE_PAYED): void
 {
-    $user->contracts()->attach($contract->id, ['payment_state' => $state]);
+
+    $expiration = now()->month <= 8
+        ? Carbon::create(now()->year, 8, 31)->endOfDay()
+        : Carbon::create(now()->year + 1, 8, 31)->endOfDay();
+    $user->contracts()->attach($contract->id, [
+        'payment_state' => $state,
+        'begin' => now(),
+        'expire' => $expiration]);
 }
 
 beforeEach(function () {
     Mail::fake();
     config(['mail.responsable_resa' => 'admin@club.test']);
     putenv('MAIL_RESPONSABLE_RESA=admin@club.test');
+
+    Carbon::setTestNow(Carbon::parse('2026-08-01 10:00:00'));
 });
 
 /*
@@ -95,6 +106,25 @@ it("ignore les réservations annulées lors du calcul de disponibilité", functi
 
     expect($result)->toBeTrue();
     $this->assertDatabaseCount('reservations', 2);
+});
+
+it("ne prend pas en compte les contrats expirés", function () {
+    $tool       = makeTool(number: 1);
+    $user  = makeUser();
+    $service    = new SrvReservation();
+    $subscribe = Subscription::create([
+        "user_id" => $user->id,
+        "contract_id" => $tool->contract_id,
+        "payment_state" => Reservation::PAYMENT_STATE_PAYED,
+        "begin" => now(),
+        "expire" => "2026-07-31" //now a ete positionné au 01/08/2026
+    ]);
+
+    //Le contrat est payé mais expiré, c'est comme si il n'y avait pas de contrat
+    //donc on a une reservation est reserved et non pas confirmed
+    $service->create($user, $tool, '2026-08-13', '2026-08-19', 'forfait', null);
+    $this->assertDatabaseHas('reservations', ['state' => Reservation::STATE_RESERVED]);
+
 });
 
 /*
@@ -400,11 +430,11 @@ it("permet à un admin d'annuler n'importe quelle réservation", function () {
     $result  = $service->cancel($reservation);
 
     expect($result)->toBeTrue();
-    $this->assertDatabaseMissing('reservations', ['id' => $reservation->id]);
-    $this->assertDatabaseHas('journal_reservations', [
+    $this->assertDatabaseHas('reservations', [
         'reference' => $reservation->reference,
         'state'     => Reservation::STATE_CANCELLED,
-    ]);
+    ]);    
+
 });
 
 it("permet au propriétaire d'annuler sa propre réservation réservée", function () {
@@ -423,8 +453,7 @@ it("permet au propriétaire d'annuler sa propre réservation réservée", functi
     $result  = $service->cancel($reservation);
 
     expect($result)->toBeTrue();
-    $this->assertDatabaseMissing('reservations', ['id' => $reservation->id]);
-    $this->assertDatabaseHas('journal_reservations', [
+    $this->assertDatabaseHas('reservations', [
         'reference' => $reservation->reference,
         'state'     => Reservation::STATE_CANCELLED,
     ]);

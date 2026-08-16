@@ -2,7 +2,6 @@
 
 use Livewire\Component;
 use App\Models\Reservation;
-use App\Models\JournalReservation;
 
 new class extends Component
 {
