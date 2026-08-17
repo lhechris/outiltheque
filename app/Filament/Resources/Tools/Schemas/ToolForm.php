@@ -126,10 +126,12 @@ class ToolForm
                             ->relationship()
                             ->schema([
                                 TextInput::make('name')
+                                    ->label('Nom')
                                     ->required()
                                     ->maxLength(255)
                                     ->extraInputAttributes($inputClasses),
                                 TextInput::make('val')
+                                    ->label('Valeur')
                                     ->required()
                                     ->maxLength(255)
                                     ->extraInputAttributes($inputClasses),
