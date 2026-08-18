@@ -17,16 +17,20 @@ class ToolsTable
         return $table
             ->columns([
                 TextColumn::make('category.name')
-                    ->label("Catégorie")
-                    ->sortable(),
+                    ->label('Catégorie')
+                    ->sortable()
+                    ->searchable(),
                 TextColumn::make('name')
-                    ->label("Nom")
+                    ->label('Nom')
+                    ->sortable()
                     ->searchable(),
                 TextColumn::make('number')
-                    ->label("Nombre")
+                    ->label('Nombre')
                     ->numeric(),
                 TextColumn::make('contract.name')
-                    ->label("Contrat"),
+                    ->label('Contrat')
+                    ->sortable()
+                    ->searchable(),
                 IconColumn::make('active')
                     ->boolean(),
                 TextColumn::make('created_at')

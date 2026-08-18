@@ -3,14 +3,16 @@
 use App\Mail\ConfirmResa;
 use App\Mail\NewResaForAdmin;
 use App\Models\Contract;
+use App\Models\Parameter;
 use App\Models\Reservation;
 use App\Models\Tool;
-use App\Models\User;
-use App\Services\Helloasso\Payment;
+use App\Services\Helloasso\Token;
 use App\Services\SrvPayment;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Mail;
 use Carbon\Carbon;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
+use Mockery;
 
 uses(RefreshDatabase::class);
 
@@ -21,17 +23,17 @@ uses(RefreshDatabase::class);
 function makeReservation(string $paymentState, array $contractAttrs = []): Reservation
 {
     $contract = Contract::factory()->create(array_merge([
-        'unit'      => 10,
+        'unit' => 10,
         'flat_rate' => 50,
     ], $contractAttrs));
 
-    $tool = makeTool(1,$contract);
+    $tool = makeTool(1, $contract);
     $user = makeUser();
 
     return Reservation::factory()->create([
-        'tool_id'       => $tool->id,
-        'user_id'       => $user->id,
-        'state'         => Reservation::STATE_RESERVED,
+        'tool_id' => $tool->id,
+        'user_id' => $user->id,
+        'state' => Reservation::STATE_RESERVED,
         'payment_state' => $paymentState,
     ]);
 }
@@ -43,9 +45,7 @@ beforeEach(function () {
 
     // Mardi 10/06/2025, pour avoir un point de départ stable.
     Carbon::setTestNow(Carbon::parse('2025-06-10 10:00:00'));
-
 });
-
 
 // ---------------------------------------------------------------------
 // Etats invalides / réservation non payable
@@ -56,7 +56,7 @@ it("refuse le paiement cash si la réservation n'est pas à l'état réservé", 
     $reservation->state = Reservation::STATE_CONFIRMED;
     $reservation->save();
 
-    $srv = new SrvPayment();
+    $srv = new SrvPayment;
     $result = $srv->pay_by_cash($reservation);
 
     expect($result)->toBeFalse();
@@ -69,7 +69,7 @@ it("refuse le paiement HelloAsso si la réservation n'est pas à l'état réserv
     $reservation->state = Reservation::STATE_CANCELLED;
     $reservation->save();
 
-    $srv = new SrvPayment();
+    $srv = new SrvPayment;
     $result = $srv->pay_by_ha($reservation);
 
     expect($result)->toBeFalse();
@@ -80,7 +80,7 @@ it('refuse le paiement si le payment_state de la réservation est incohérent', 
     // Ex: déjà marqué "Payé Helloasso" alors qu'on tente de la payer à nouveau
     $reservation = makeReservation(Reservation::PAYMENT_STATE_HA_PAYED);
 
-    $srv = new SrvPayment();
+    $srv = new SrvPayment;
     $result = $srv->pay_by_cash($reservation);
 
     expect($result)->toBeFalse();
@@ -93,10 +93,10 @@ it('refuse le paiement si le payment_state de la réservation est incohérent', 
 // Paiement à l'unité (payment_state = UNPAID)
 // ---------------------------------------------------------------------
 
-it('paie une réservation à l\'unité en cash', function () {
+it("paie une réservation à l'unité en cash", function () {
     $reservation = makeReservation(Reservation::PAYMENT_STATE_UNPAID, ['unit' => 15]);
 
-    $srv = new SrvPayment();
+    $srv = new SrvPayment;
     $result = $srv->pay_by_cash($reservation);
 
     expect($result)->toBeTrue();
@@ -108,25 +108,33 @@ it('paie une réservation à l\'unité en cash', function () {
     Mail::assertSent(NewResaForAdmin::class);
 });
 
-it('paie une réservation à l\'unité via HelloAsso et initialise le paiement', function () {
+it("paie une réservation à l'unité via HelloAsso et initialise le paiement", function () {
+    Http::fake([
+        '*' => Http::response([
+            'id' => 'payment-ha-123',
+            'redirectUrl' => 'https://helloasso.com/checkout/payment-ha-123',
+        ], 200),
+    ]);
+
+    $mockToken = Mockery::mock('alias:'.Token::class);
+    $mockToken->shouldReceive('refresh')->andReturn(null);
+
     $reservation = makeReservation(Reservation::PAYMENT_STATE_UNPAID, ['unit' => 20]);
 
-    $paymentMock = Mockery::mock('alias:' . Payment::class);
-    $paymentMock->shouldReceive('init')
-        ->once()
-        ->with(Mockery::on(fn ($r) => $r->is($reservation)), 20);
+    Parameter::factory()->create([
+        'name' => 'ha_access_token',
+        'val' => 'test-access-token',
+    ]);
 
-    $srv = new SrvPayment();
+    $srv = new SrvPayment;
     $result = $srv->pay_by_ha($reservation);
 
     expect($result)->toBeTrue();
     $reservation->refresh();
-    expect($reservation->payment_state)->toBe(Reservation::PAYMENT_STATE_HA_PENDING);
-    expect($reservation->state)->toBe(Reservation::STATE_CONFIRMED);
-    expect($srv->getMessage())->toBe('Paiement HelloAsso sélectionné un email vous à été envoyé');
 
-    Mail::assertSent(ConfirmResa::class);
-    Mail::assertSent(NewResaForAdmin::class);
+    expect($reservation->payment_state)->toBe(Reservation::PAYMENT_STATE_HA_PENDING);
+    expect($reservation->state)->toBe(Reservation::STATE_PAYMENT);
+    expect($reservation->payment_id)->toBe('payment-ha-123');
 });
 
 // ---------------------------------------------------------------------
@@ -136,7 +144,7 @@ it('paie une réservation à l\'unité via HelloAsso et initialise le paiement',
 it('crée le pivot contrat (attach) lors d\'un paiement forfait cash sans contrat existant', function () {
     $reservation = makeReservation(Reservation::PAYMENT_STATE_FORFAIT, ['flat_rate' => 50]);
 
-    $srv = new SrvPayment();
+    $srv = new SrvPayment;
     $result = $srv->pay_by_cash($reservation);
 
     expect($result)->toBeTrue();
@@ -151,12 +159,24 @@ it('crée le pivot contrat (attach) lors d\'un paiement forfait cash sans contra
 });
 
 it('crée le pivot contrat (attach) lors d\'un paiement forfait HelloAsso sans contrat existant', function () {
+    Http::fake([
+        '*' => Http::response([
+            'id' => 'payment-forfait-123',
+            'redirectUrl' => 'https://helloasso.com/checkout/payment-forfait-123',
+        ], 200),
+    ]);
+
+    $mockToken = Mockery::mock('alias:'.Token::class);
+    $mockToken->shouldReceive('refresh')->andReturn(null);
+
     $reservation = makeReservation(Reservation::PAYMENT_STATE_FORFAIT, ['flat_rate' => 50]);
 
-    Mockery::mock('alias:' . Payment::class)
-        ->shouldReceive('init')->once()->with(Mockery::any(), 50);
+    Parameter::factory()->create([
+        'name' => 'ha_access_token',
+        'val' => 'test-access-token',
+    ]);
 
-    $srv = new SrvPayment();
+    $srv = new SrvPayment;
     $result = $srv->pay_by_ha($reservation);
 
     expect($result)->toBeTrue();
@@ -180,10 +200,10 @@ it('met à jour le pivot contrat existant (UNPAID) lors d\'un paiement forfait c
         'payment_state' => Reservation::PAYMENT_STATE_UNPAID,
         'begin' => now(),
         'expire' => '2026-08-31',
-        'begin' => now()
+        'begin' => now(),
     ]);
 
-    $srv = new SrvPayment();
+    $srv = new SrvPayment;
     $result = $srv->pay_by_cash($reservation);
 
     expect($result)->toBeTrue();
@@ -209,7 +229,7 @@ it('refuse le paiement forfait cash si le pivot contrat est déjà dans un état
         'begin' => now(),
     ]);
 
-    $srv = new SrvPayment();
+    $srv = new SrvPayment;
     $result = $srv->pay_by_cash($reservation);
 
     expect($result)->toBeFalse();
@@ -236,7 +256,7 @@ it('refuse le paiement forfait HelloAsso si le pivot contrat est déjà dans un 
         'begin' => now(),
     ]);
 
-    $srv = new SrvPayment();
+    $srv = new SrvPayment;
     $result = $srv->pay_by_ha($reservation);
 
     expect($result)->toBeFalse();
@@ -250,7 +270,7 @@ it('refuse le paiement forfait HelloAsso si le pivot contrat est déjà dans un 
 it('envoie les emails avec le bon montant', function () {
     $reservation = makeReservation(Reservation::PAYMENT_STATE_UNPAID, ['unit' => 33]);
 
-    $srv = new SrvPayment();
+    $srv = new SrvPayment;
     $srv->pay_by_cash($reservation);
 
     Mail::assertSent(ConfirmResa::class, function ($mail) use ($reservation) {

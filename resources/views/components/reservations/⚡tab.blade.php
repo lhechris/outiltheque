@@ -211,8 +211,13 @@ new class extends Component {
                             '{{ $reservation->payment_state }}',
                         )"
                     >
+                    <tr>
                         <td class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap">
+                            @if($this->editable)
                             <a href="{{route('reservations.show',["reservation"=>$reservation->id])}}"> {{ $reservation->reference }} </a>
+                            @else
+                             {{ $reservation->reference }}
+                            @endif
                         </td>
 
                         <td class="px-4 py-3 whitespace-nowrap">

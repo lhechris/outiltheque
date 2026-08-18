@@ -2,17 +2,16 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\Mail;
-
-use App\Models\Reservation;
 use App\Mail\ConfirmResa;
 use App\Mail\NewResaForAdmin;
+use App\Models\Reservation;
 use App\Services\Helloasso\Payment;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Mail;
 
 class SrvPayment
 {
-    private string $message = "";
+    private string $message = '';
 
     public function getMessage(): string
     {
@@ -48,13 +47,14 @@ class SrvPayment
      */
     private function pay(Reservation $reservation, string $mode): bool
     {
-        if (!$reservation->isReserved()) {
+        if (! $reservation->isReserved()) {
             $this->message = 'Impossible de payer cette réservation';
             \Log::info("Paiement {$mode} erreur : soit pas de réservation, soit l'état n'est pas reservé");
+
             return false;
         }
 
-        \Log::info("{$reservation->reference} Paiement " . ($mode === 'cash' ? 'cash' : 'HelloAsso'));
+        \Log::info("{$reservation->reference} Paiement ".($mode === 'cash' ? 'cash' : 'HelloAsso'));
 
         $amount = $reservation->tool->contract->unit;
         $targetState = $mode === 'cash'
@@ -70,7 +70,7 @@ class SrvPayment
             // sont ceux du pivot contrat, pas de la réservation.
             $amount = $reservation->tool->contract->flat_rate;
 
-            if (!$this->updateContractPivot($reservation, $targetState)) {
+            if (! $this->updateContractPivot($reservation, $targetState)) {
                 return false;
             }
 
@@ -78,24 +78,58 @@ class SrvPayment
             // Etat incohérent : ne devrait jamais arriver
             \Log::info("Problème avec la résa {$reservation->reference} les états sont incohérents {$reservation->state} {$reservation->payment_state}");
             $this->message = "Problème d'état avec la réservation, veuillez consulter les administrateurs.";
+
             return false;
         }
 
         if ($mode === 'ha') {
             Payment::init($reservation, $amount);
+
+        } else {
+
+            // La réservation est confirmée
+            $reservation->state = Reservation::STATE_CONFIRMED;
+            $reservation->update();
+
+            $this->sendEmails($reservation, $amount);
+
+            $this->message = $mode === 'cash'
+                ? 'Paiement cash sélectionné un email vous à été envoyé'
+                : 'Paiement HelloAsso sélectionné un email vous à été envoyé';
         }
 
-        // La réservation est confirmée
-        $reservation->state = Reservation::STATE_CONFIRMED;
-        $reservation->update();
-
-        $this->sendEmails($reservation, $amount);
-
-        $this->message = $mode === 'cash'
-            ? 'Paiement cash sélectionné un email vous à été envoyé'
-            : 'Paiement HelloAsso sélectionné un email vous à été envoyé';
-
         return true;
+    }
+
+    /**
+     * Confirme helloasso
+     * Verifie si les paiement à été validé
+     */
+    public function confirm_ha(Reservation $reservation): bool
+    {
+
+        if ($reservation->isConfirmed()) {
+            return true;
+
+        } elseif ($reservation->isPendingHA()) {
+
+            if (Payment::check($reservation)) {
+
+                if ($reservation->isPayment()) {
+
+                    $reservation->setPaymentHA();
+                    $this->sendEmails($reservation, null);
+                }
+
+                return true;
+
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+
     }
 
     /**
@@ -111,7 +145,7 @@ class SrvPayment
             ->where('contracts.id', $contractId)
             ->first();
 
-        if (!$usrContract) {
+        if (! $usrContract) {
             $expiration = now()->month <= 8
                                 ? Carbon::create(now()->year, 8, 31)->endOfDay()
                                 : Carbon::create(now()->year + 1, 8, 31)->endOfDay();
@@ -119,8 +153,9 @@ class SrvPayment
             $reservation->user->contracts()->attach($contractId, [
                 'payment_state' => $newPivotState,
                 'begin' => now(),
-                'expire' => $expiration
+                'expire' => $expiration,
             ]);
+
             return true;
         }
 
@@ -128,6 +163,7 @@ class SrvPayment
             // Ce n'est pas normal d'être ici
             \Log::info("Problème avec la résa {$reservation->reference} les états sont incohérents {$reservation->state} {$usrContract->pivot->payment_state}");
             $this->message = "Problème d'état avec la réservation, veuillez consulter les administrateurs.";
+
             return false;
         }
 
@@ -143,9 +179,9 @@ class SrvPayment
      */
     public function sendEmails(Reservation $reservation, $amount): void
     {
-        \Log::info("{$reservation->reference} On envoi le mail à {$reservation->email} et " . env('MAIL_RESPONSABLE_RESA', ''));
+        \Log::info("{$reservation->reference} On envoi le mail à {$reservation->email} et ".env('MAIL_RESPONSABLE_RESA', ''));
 
         Mail::to($reservation->email)->send(new ConfirmResa($reservation, $amount));
-        Mail::to(env('MAIL_RESPONSABLE_RESA', ''))->send(new NewResaForAdmin($reservation));
+        Mail::to(env('MAIL_RESPONSABLE_RESA', ''))->send(new NewResaForAdmin($reservation, $amount));
     }
 }

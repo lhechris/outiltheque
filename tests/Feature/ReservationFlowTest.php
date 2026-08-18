@@ -2,10 +2,10 @@
 
 use App\Mail\ConfirmResa;
 use App\Mail\NewResaForAdmin;
+use App\Models\Parameter;
 use App\Models\Reservation;
-use App\Models\Tool;
 use App\Services\Helloasso\Payment;
-use App\Services\SrvPayment;
+use App\Services\Helloasso\Token;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Livewire\Livewire;
@@ -80,10 +80,25 @@ it('sélectionne un outil, réserve puis choisit HelloAsso', function () {
 
     $reservation = Reservation::query()->firstOrFail();
 
-    Mockery::mock('alias:' . Payment::class)
-        ->shouldReceive('init')
-        ->once()
-        ->with(Mockery::on(fn ($r) => $r->is($reservation)), Mockery::type('int'));
+    /*  Mockery::mock('alias:' . Payment::class)
+          ->shouldReceive('init')
+          ->once()
+          ->with(Mockery::on(fn ($r) => $r->is($reservation)), Mockery::type('int'));*/
+    Mockery::mock('alias:'.Token::class)
+        ->shouldReceive('refresh')
+        ->once();
+
+    Http::fake([
+        '*' => Http::response([
+            'id' => 'payment-123',
+            'redirectUrl' => 'https://helloasso.com/checkout/payment-123',
+        ], 200),
+    ]);
+
+    Parameter::factory()->create([
+        'name' => env('HELLOASSO_KEY_ACCESS_TOKEN', 'HELLOASSO_ENCAISSEMENT_ACCESS_TOKEN'),
+        'val' => 'test-access-token',
+    ]);
 
     Livewire::test('paiements.select', ['ref' => $reservation->reference])
         ->assertSet('needToPay', true)
@@ -91,8 +106,47 @@ it('sélectionne un outil, réserve puis choisit HelloAsso', function () {
 
     $reservation->refresh();
 
-    expect($reservation->state)->toBe(Reservation::STATE_CONFIRMED)
+    expect($reservation->state)->toBe(Reservation::STATE_PAYMENT)
         ->and($reservation->payment_state)->toBe(Reservation::PAYMENT_STATE_HA_PENDING);
+
+    // Le paiement est enregistré, pas de mail pour le moment
+    // on attend une confirmation
+    Mail::assertNothingSent();
+});
+
+it("Reçoit la confirmation HelloAsso, on verifie que c'est bien payé", function () {
+    $user = makeUser();
+    $tool = makeTool(number: 2);
+    $reservation = Reservation::factory()->create([
+        'state' => Reservation::STATE_PAYMENT,
+        'payment_state' => Reservation::PAYMENT_STATE_HA_PENDING,
+        'tool_id' => $tool->id,
+        'user_id' => $user->id,
+    ]);
+    Parameter::factory()->create([
+        'name' => env('HELLOASSO_KEY_ACCESS_TOKEN', 'HELLOASSO_ENCAISSEMENT_ACCESS_TOKEN'),
+        'val' => 'test-access-token',
+    ]);
+
+    actingAs($user);
+
+    Http::fake([
+        '*' => Http::response([
+            'id' => 'payment-100',
+            'redirectUrl' => 'https://helloasso.com/checkout/payment-100',
+            'order' => [
+                'payments' => [
+                    ['state' => 'Authorized'],
+                ],
+            ],
+        ], 200),
+    ]);
+    Livewire::test('paiements.confirm', ['ref' => $reservation->reference]);
+
+    $reservation->refresh();
+
+    expect($reservation->state)->toBe(Reservation::STATE_CONFIRMED)
+        ->and($reservation->payment_state)->toBe(Reservation::PAYMENT_STATE_HA_PAYED);
 
     Mail::assertSent(ConfirmResa::class);
     Mail::assertSent(NewResaForAdmin::class);

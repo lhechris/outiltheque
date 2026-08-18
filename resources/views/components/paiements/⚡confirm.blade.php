@@ -3,7 +3,7 @@
 use Livewire\Component;
 use App\Models\Reservation;
 use App\Mail\ConfirmResa;
-use App\Services\Helloasso\Payment;
+use App\Services\SrvPayment;
 
 new class extends Component
 {
@@ -14,29 +14,8 @@ new class extends Component
     public function mount($ref) {
 
         $this->reservation = Reservation::where("reference",$ref)->firstOrFail();
-
-        if ($this->reservation->isConfirmed()) {
-            $this->isConfirmed = true;
-        
-        } else if ($this->reservation->isPendingHA()) {
-
-            if (Payment::check($this->reservation)) {
-
-                if ($this->reservation->isPayment()) {
-                    
-                    $this->reservation->setPaymentHA();
-                    //Envoi du mail
-                    Mail::to($this->reservation->email)->send(new ConfirmResa($this->reservation));
-                }
-                $this->isConfirmed=true;
-
-            } else {
-                $this->isConfirmed=false;
-            }                             
-        } else {
-            $isUnknown = true;
-        }
-
+        $srvPay = app(SrvPayment::class);
+        $this->isConfirmed = $srvPay->confirm_ha($this->reservation);
              
     }
 

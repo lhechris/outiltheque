@@ -4,8 +4,6 @@ use Livewire\Component;
 use App\Models\Reservation;
 use App\Models\Parameter;
 use Illuminate\Support\Facades\Mail;
-use App\Mail\ConfirmResa;
-use App\Mail\NewResaForAdmin;
 
 use App\Services\SrvReservation;
 use App\Services\SrvPayment;
