@@ -3,86 +3,127 @@
     <head>
         @include('partials.head')
     </head>
-<body class="min-h-screen bg-white">
+<body class="min-h-screen bg-[#f4f0e8] font-sans text-[#25352d] antialiased">
+    <div class="relative isolate overflow-hidden">
+        <div class="absolute inset-x-0 top-0 -z-10 h-[34rem] bg-[radial-gradient(circle_at_85%_5%,rgba(216,109,67,0.2),transparent_32%),radial-gradient(circle_at_8%_18%,rgba(100,130,91,0.24),transparent_32%)]"></div>
 
-     <!--   <header class="w-full lg:max-w-4xl max-w-[335px] text-sm mb-6 not-has-[nav]:hidden">
-            @if (Route::has('login'))
-                <nav class="flex items-center justify-end gap-4">
-                    @auth
-                        <a
-                            href="{{ route('tools.index') }}"
-                            class="inline-block px-5 py-1.5 text-[#EDEDEC] border-[#19140035] hover:border-[#1915014a] border text-[#1b1b18] dark:border-[#3E3E3A] dark:hover:border-[#62605b] rounded-sm text-sm leading-normal"
-                        >
-                            Catalog
-                        </a>
-                    @else
-                        <a
-                            href="{{ route('login') }}"
-                            class="inline-block px-5 py-1.5 text-[#EDEDEC] text-[#1b1b18] border border-transparent hover:border-[#19140035] dark:hover:border-[#3E3E3A] rounded-sm text-sm leading-normal"
-                        >
-                            {{ __("Log in") }}
-                        </a>
-
-                        @if (Route::has('register'))
-                            <a
-                                href="{{ route('register') }}"
-                                class="inline-block px-5 py-1.5 text-[#EDEDEC] border-[#19140035] hover:border-[#1915014a] border text-[#1b1b18] dark:border-[#3E3E3A] dark:hover:border-[#62605b] rounded-sm text-sm leading-normal">
-                                {{ __("Register") }}
-                            </a>
-                        @endif
-                    @endauth
-                </nav>
-            @endif
-        </header>-->
-
-        <div>
-            <nav class="fixed top-0 left-0 z-20 w-full border-b border-gray-200 bg-white py-2.5 px-6 sm:px-4">
-                <div class="container mx-auto flex max-w-6xl flex-wrap items-center justify-between">
-                    <a href="#" class="flex items-center w-auto">
-                        <img class="max-h-12" src="/images/LB_logo.png">
-                        <span class="self-center whitespace-nowrap text-xl font-semibold p-2">Outilthèque</span>
-                    </a>
-                    <div class="mt-2 sm:mt-0 sm:flex md:order-2">
-                        <span class="text-sm px-4 py-1.5"></span>
-                    </div>
-                    <div class="items-center justify-between md:order-1 md:block md:w-auto" id="navbar-sticky">
-                        <ul class="mt-4 flex flex-row rounded-lg border border-gray-100 bg-gray-50 p-4 md:mt-0 md:flex-row md:space-x-8 md:border-0 md:bg-blue md:text-sm md:font-medium"></ul>
-                    </div>
-                </div>
-            </nav>
-
-            <div class="w-6/12 p-10 mx-auto"></div>
-                <div>
-                <div class="flex flex-col overflow-x-auto overflow-y-hidden py-10 ml-2">
-                    <p>Bienvenue sur l'outilthèque de Labobinette</p>
-                    <p class="mt-5">Ce site est réservé aux adhérents de Labobinette</p>
-                    <p class="mt-2">Le principe d'une outilthèque est de pouvoir emprunter un outil ou un objet pour une durée de temps défnie à la place de l’acheter.</p>
-                    <p class="mt-2">L'outilthèque fonctionne comme une bibliothèque, mais pour le prêt d'outils. Il est possible d'emprunter du matériel de cuisine, des outils variés, du matériel de jardinage. </p>
-                    <p class="mt-2">Ici, vous pourrez emprunter les objets pour une durée d'une semaine.</p><p class="mt-2">Plutôt que d'accumuler un ensemble d'outils encombrants chez soi, l'outilthèque permet une mise en commun.</p>
-                    <p class="mt-5">Vous réservez, vous récupérez votre réservation le jeudi et vous le retournez le mercredi</p>
-                    @auth
-                    <a href="{{ route('tools.index') }}" class="mt-5 w-64 bg-blue-500 hover:bg-blue-900 text-white font-bold py-2 px-4 rounded">Accéder aux produits</a>
-                    @else
-                    <a href="{{ route('login') }}" class="mt-5 w-64 bg-blue-500 hover:bg-blue-900 text-white font-bold py-2 px-4 rounded">{{ __("Log in") }}</a>
-                    <a href="{{ route('register') }}" class="mt-5 w-64 bg-blue-500 hover:bg-blue-900 text-white font-bold py-2 px-4 rounded">{{ __("Register") }}</a>
-                    @endauth
-
-
-                </div>
+        <nav class="relative mx-auto flex max-w-7xl items-center justify-between px-6 py-5 lg:px-8" aria-label="Navigation principale">
+            <a href="{{ route('home') }}" class="flex items-center gap-3" aria-label="Accueil Outilthèque">
+                <img class="h-12 w-12 object-contain" src="/images/LB_logo.png" alt="Logo Labobinette">
+                <span class="font-[Comfortaa] text-lg font-bold tracking-tight">Outilthèque</span>
+            </a>
+            <div class="flex items-center gap-3 text-sm font-semibold">
+                <a href="#tarifs" class="hidden text-[#52665b] transition hover:text-[#d86d43] sm:inline">Tarifs</a>
+                @auth
+                    <a href="{{ route('tools.index') }}" class="rounded-full bg-[#25352d] px-4 py-2.5 text-white transition hover:bg-[#d86d43]">Voir les outils</a>
+                @else
+                    <a href="{{ route('login') }}" class="rounded-full border border-[#b9c3b6] px-4 py-2.5 text-[#25352d] transition hover:border-[#25352d]">Se connecter</a>
+                @endauth
             </div>
-            <footer class="py-6 bg-gray-200 text-gray-900">
-                <div class="container px-6 mx-auto space-y-6 divide-y divide-gray-400 md:space-y-12 divide-opacity-50">
-                    <div class="grid justify-center lg:justify-between">
-                        <div class="flex flex-col self-center text-sm text-center md:block lg:col-start-1 md:space-x-6">
-                            <span>CopyLeft ©2024 by labobinette dev team</span>
+        </nav>
+
+        <main>
+            <section class="mx-auto grid max-w-7xl items-center gap-12 px-6 pb-20 pt-14 lg:grid-cols-[1.05fr_0.95fr] lg:px-8 lg:pb-28 lg:pt-24">
+                <div class="max-w-2xl">
+                    <p class="mb-6 inline-flex items-center gap-2 rounded-full bg-white/75 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-[#d86d43] shadow-sm ring-1 ring-[#e3d8c7]">
+                        <span class="h-2 w-2 rounded-full bg-[#d86d43]"></span>
+                        Labobinette · partage local
+                    </p>
+                    <h1 class="font-[Comfortaa] text-4xl font-bold leading-[1.12] tracking-tight text-[#25352d] sm:text-5xl lg:text-6xl">
+                        Emprunter plus.<br><span class="text-[#d86d43]">Acheter moins.</span>
+                    </h1>
+                    <p class="mt-7 max-w-xl text-lg leading-8 text-[#52665b]">
+                        Bienvenue dans l'outilthèque de Labobinette : une bibliothèque d'objets et d'outils pour bricoler, cuisiner et jardiner sans encombrer vos placards.
+                    </p>
+                    <div class="mt-9 flex flex-col gap-3 sm:flex-row">
+                        @auth
+                            <a href="{{ route('tools.index') }}" class="inline-flex items-center justify-center gap-3 rounded-full bg-[#d86d43] px-6 py-3.5 font-bold text-white shadow-lg shadow-[#d86d43]/20 transition hover:-translate-y-0.5 hover:bg-[#bf5933]">Explorer le catalogue <span aria-hidden="true">→</span></a>
+                        @else
+                           <!-- <a href="{{ route('register') }}" class="inline-flex items-center justify-center gap-3 rounded-full bg-[#d86d43] px-6 py-3.5 font-bold text-white shadow-lg shadow-[#d86d43]/20 transition hover:-translate-y-0.5 hover:bg-[#bf5933]">Créer mon compte <span aria-hidden="true">→</span></a>-->
+                            <a href="{{ route('login') }}" class="inline-flex items-center justify-center rounded-full border border-[#b9c3b6] bg-white/50 px-6 py-3.5 font-bold text-[#25352d] transition hover:bg-white">Je me connecte</a>
+                        @endauth
+                    </div>
+                </div>
+
+                <div class="relative mx-auto w-full max-w-lg">
+                    <div class="absolute -inset-5 -z-10 rotate-3 rounded-[2.5rem] bg-[#d9e1d3]"></div>
+                    <div class="rounded-[2.5rem] bg-[#25352d] p-7 text-[#f4f0e8] shadow-2xl shadow-[#25352d]/20 sm:p-10">
+                        <div class="flex items-start justify-between border-b border-white/15 pb-8">
+                            <div>
+                                <p class="text-sm font-semibold uppercase tracking-[0.18em] text-[#b9c9ad]">Le principe</p>
+                                <h2 class="mt-3 font-[Comfortaa] text-2xl font-bold">Une ressource,<br>des dizaines de projets.</h2>
+                            </div>
+                            <span class="text-4xl" aria-hidden="true">✦</span>
+                        </div>
+                        <div class="mt-8 space-y-7">
+                            <div class="flex gap-4"><span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#d86d43] font-bold">01</span><p class="pt-1 leading-6 text-[#dce6d8]">Choisissez l'outil dont vous avez besoin.</p></div>
+                            <div class="flex gap-4"><span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#d86d43] font-bold">02</span><p class="pt-1 leading-6 text-[#dce6d8]">Réservez-le pour une semaine.</p></div>
+                            <div class="flex gap-4"><span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#d86d43] font-bold">03</span><p class="pt-1 leading-6 text-[#dce6d8]">Récupérez-le jeudi, retournez-le mercredi.</p></div>
                         </div>
                     </div>
                 </div>
-            </footer>
-        </div>
+            </section>
 
-        @if (Route::has('login'))
-            <div class="h-14.5 hidden lg:block"></div>
-        @endif
-    </body>
+            <section class="border-y border-[#ded5c7] bg-[#fffdf8]" id="tarifs">
+                <div class="mx-auto max-w-7xl px-6 py-16 lg:px-8 lg:py-20">
+                    <div class="max-w-3xl">
+                        <p class="text-sm font-bold uppercase tracking-[0.18em] text-[#d86d43]">Les tarifs, en toute transparence</p>
+                        <h2 class="mt-3 font-[Comfortaa] text-3xl font-bold tracking-tight sm:text-4xl">Deux façons d'emprunter.</h2>
+                        <p class="mt-4 leading-7 text-[#52665b]">Vous choisissez entre un paiement à l'unité ou un forfait. Le montant du forfait dépend du type d'outil emprunté.</p>
+                    </div>
+
+                    <div class="mt-10 grid gap-5 lg:grid-cols-2">
+                        <article class="rounded-2xl bg-[#25352d] p-7 text-[#f4f0e8] shadow-xl shadow-[#25352d]/10">
+                            <div class="flex items-start justify-between gap-4">
+                                <div>
+                                    <p class="text-sm font-bold uppercase tracking-[0.16em] text-[#b9c9ad]">Choix 01</p>
+                                    <h3 class="mt-3 font-[Comfortaa] text-2xl font-bold">Paiement à l'unité</h3>
+                                </div>
+                                <span class="text-3xl text-[#d86d43]" aria-hidden="true">◒</span>
+                            </div>
+                            <p class="mt-5 leading-7 text-[#dce6d8]">Vous payez uniquement lorsque vous réservez un outil. Le prix est indiqué pour chaque type d'outil ci-dessous.</p>
+                            <p class="mt-6 text-sm font-semibold text-[#b9c9ad]">Idéal pour un besoin ponctuel.</p>
+                        </article>
+
+                        <article class="rounded-2xl border border-[#d8cbb9] bg-[#f4f0e8] p-7">
+                            <div class="flex items-start justify-between gap-4">
+                                <div>
+                                    <p class="text-sm font-bold uppercase tracking-[0.16em] text-[#d86d43]">Choix 02</p>
+                                    <h3 class="mt-3 font-[Comfortaa] text-2xl font-bold">Forfait par type d'outil</h3>
+                                </div>
+                                <span class="text-3xl text-[#d86d43]" aria-hidden="true">✦</span>
+                            </div>
+                            <p class="mt-5 leading-7 text-[#52665b]">Vous choisissez un forfait selon le type d'outil. Il vous donne accès aux outils concernés pendant sa période de validité.</p>
+                            <p class="mt-6 text-sm font-semibold text-[#8a5a37]">Les forfaits sont valables jusqu'au 31 août.</p>
+                        </article>
+                    </div>
+
+                    <div class="mt-8 overflow-hidden rounded-2xl border border-[#ded5c7] bg-white">
+                        <div class="grid grid-cols-[1.3fr_0.8fr_0.8fr] gap-4 border-b border-[#ded5c7] bg-[#ebe4d8] px-5 py-4 text-xs font-bold uppercase tracking-[0.12em] text-[#52665b] sm:px-7">
+                            <span>Type d'outil</span>
+                            <span>À l'unité</span>
+                            <span>Forfait</span>
+                        </div>
+                        @foreach($contrats as $contrat)
+                            <div class="grid grid-cols-[1.3fr_0.8fr_0.8fr] items-center gap-4 border-b border-[#eee8de] px-5 py-5 last:border-0 sm:px-7">
+                                <div>
+                                    <h3 class="font-[Comfortaa] font-bold text-[#25352d]">{{ $contrat->name }}</h3>
+                                    @if($contrat->restriction)
+                                        <p class="mt-1 text-xs text-[#718174]">{{ $contrat->restriction }}</p>
+                                    @endif
+                                </div>
+                                <span class="font-bold text-[#d86d43]">{{ number_format($contrat->unit, 2, ',', ' ') }} €</span>
+                                <span class="font-bold text-[#25352d]">{{ number_format($contrat->flat_rate, 2, ',', ' ') }} €</span>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="mx-auto flex max-w-7xl flex-col gap-2 px-6 py-8 text-sm text-[#718174] sm:flex-row sm:items-center sm:justify-between lg:px-8">
+            <span>CopyLeft ©2024 Labobinette dev team</span>
+        </footer>
+    </div>
+</body>
 </html>

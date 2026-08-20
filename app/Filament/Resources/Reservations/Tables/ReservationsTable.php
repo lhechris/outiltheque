@@ -20,18 +20,26 @@ class ReservationsTable
                 TextColumn::make('name')
                     ->label('Nom')
                     ->searchable(),
+                TextColumn::make('email')
+                    ->label('Email')
+                    ->searchable(),
                 TextColumn::make('tool.name')
                     ->label('Outil')
-                    ->sortable(),
+                    ->sortable()
+                    ->searchable(),
                 TextColumn::make('date_start')
+                    ->label("Début")
                     ->dateTime('d/m/y')
                     ->sortable(),
                 TextColumn::make('date_end')
+                    ->label("Fin")
                     ->dateTime('d/m/y')
                     ->sortable(),
                 TextColumn::make('state')
+                    ->label("Etat")
                     ->searchable(),
                 TextColumn::make('payment_state')
+                    ->label("Paiement")
                     ->searchable(),
             ])
             ->filters([

@@ -2,8 +2,10 @@
 
 use App\Models\Category;
 use App\Models\Tool;
+use App\Models\Contract;
 use Livewire\Attributes\Url;
 use Livewire\Component;
+
 
 new class extends Component
 {
@@ -45,6 +47,7 @@ new class extends Component
                 ->when($this->search, fn ($q) => $q->where('name', 'like', "%{$this->search}%"))
                 ->orderBy('name')
                 ->get(),
+            'contrats' => Contract::get(),
         ];
     }
 }

@@ -2,8 +2,10 @@
 
 use Illuminate\Support\Facades\Route;
 use Livewire\Livewire;
+use App\Http\Controllers\WelcomeController;
 
-Route::view('/', 'welcome')->name('home');
+Route::get('/', WelcomeController::class)->name('home');
+//Route::view('/', 'welcome')->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
 
