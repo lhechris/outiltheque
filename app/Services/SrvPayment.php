@@ -146,9 +146,9 @@ class SrvPayment
             ->first();
 
         if (! $usrContract) {
-            $expiration = now()->month <= 8
-                                ? Carbon::create(now()->year, 8, 31)->endOfDay()
-                                : Carbon::create(now()->year + 1, 8, 31)->endOfDay();
+            $expiration = now()->month <= 9
+                                ? Carbon::create(now()->year, 12, 31)->endOfDay()
+                                : Carbon::create(now()->year + 1, 12, 31)->endOfDay();
 
             $reservation->user->contracts()->attach($contractId, [
                 'payment_state' => $newPivotState,
