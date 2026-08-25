@@ -96,7 +96,7 @@ it('sélectionne un outil, réserve puis choisit HelloAsso', function () {
     ]);
 
     Parameter::factory()->create([
-        'name' => env('HELLOASSO_KEY_ACCESS_TOKEN', 'HELLOASSO_ENCAISSEMENT_ACCESS_TOKEN'),
+        'name' => config('helloasso.access_token_key'),
         'val' => 'test-access-token',
     ]);
 
@@ -124,7 +124,7 @@ it("Reçoit la confirmation HelloAsso, on verifie que c'est bien payé", functio
         'user_id' => $user->id,
     ]);
     Parameter::factory()->create([
-        'name' => env('HELLOASSO_KEY_ACCESS_TOKEN', 'HELLOASSO_ENCAISSEMENT_ACCESS_TOKEN'),
+        'name' => config('helloasso.access_token_key'),
         'val' => 'test-access-token',
     ]);
 

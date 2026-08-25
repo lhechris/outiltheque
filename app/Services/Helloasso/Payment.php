@@ -17,8 +17,8 @@ class Payment {
         $firstname = substr($fullname, 0, strpos($fullname, ' '));
         $lastname = substr($fullname, strpos($fullname, ' '), strlen($fullname));
 
-        //$baseurl = env('APP_URL');
-        $baseurl = "https://outiltheque.labo-binette.fr";
+        $baseurl = config('app.url');
+        //$baseurl = "https://outiltheque.labo-binette.fr";
 
         $details= [
             "totalAmount" => $amount*100,
@@ -38,10 +38,10 @@ class Payment {
 
         Token::refresh();
 
-        $data = Parameter::where('name','=',env('HELLOASSO_KEY_ACCESS_TOKEN',''))->firstOrFail();
+        $data = Parameter::where('name','=',config('helloasso.access_token_key'))->firstOrFail();
         $accesstoken = $data->val;
-        $haresp = Http::withToken($accesstoken)->post(env('HELLOASSO_ENCAISSEMENT_URL',''), $details);
-        \Log::debug(env('HELLOASSO_ENCAISSEMENT_URL'));
+        $haresp = Http::withToken($accesstoken)->post(config('helloasso.encaissement_url'), $details);
+        \Log::debug(config('helloasso.encaissement_url'));
         \Log::debug($details);
         \Log::debug("Reponse : ".$haresp->status());
         \Log::debug($haresp->body());
@@ -64,11 +64,11 @@ class Payment {
 
     static function check(Reservation $reservation) : bool {
 
-            $data = Parameter::where('name','=',env('HELLOASSO_KEY_ACCESS_TOKEN',''))->first();
+            $data = Parameter::where('name','=',config('helloasso.access_token_key'))->first();
             $accesstoken = $data->val;
 
-            $haresp = Http::withToken($accesstoken)->get(env('HELLOASSO_ENCAISSEMENT_URL','')."/".$reservation->payment_id);
-            \Log::debug(env('HELLOASSO_ENCAISSEMENT_URL','')."/".$reservation->payment_id);
+            $haresp = Http::withToken($accesstoken)->get(config('helloasso.encaissement_url')."/".$reservation->payment_id);
+            \Log::debug(config('helloasso.encaissement_url')."/".$reservation->payment_id);
             //\Log::debug($accesstoken);
             \Log::debug("Reponse : ".$haresp->status());
             \Log::debug($haresp->body());

@@ -62,7 +62,7 @@ it('initialise un paiement Helloasso avec succès', function () {
     expect($reservation->fresh()->payment_id)->toBe('payment-123');
 
     Http::assertSent(function ($request) {
-        return $request->url() === env('HELLOASSO_ENCAISSEMENT_URL', '')
+        return $request->url() === config('helloasso.encaissement_url')
             && $request->method() === 'POST'
             && collect($request->data())->has(['totalAmount', 'payer']);
     });

@@ -104,9 +104,9 @@ class SrvReservation
             ]);
 
             if ($state == Reservation::STATE_CONFIRMED) {
-                \Log::info("{$this->reservation->reference} On envoi le mail à {$this->reservation->email} et " . env('MAIL_RESPONSABLE_RESA', ''));
+                \Log::info("{$this->reservation->reference} On envoi le mail à {$this->reservation->email} et " . config('mail.responsable_resa'));
                 Mail::to($this->reservation->email)->send(new ConfirmResa($this->reservation));
-                Mail::to(env('MAIL_RESPONSABLE_RESA', ''))->send(new NewResaForAdmin($this->reservation));
+                Mail::to(config('mail.responsable_resa'))->send(new NewResaForAdmin($this->reservation));
             }
 
             $success = true;

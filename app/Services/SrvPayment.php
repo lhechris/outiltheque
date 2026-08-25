@@ -179,9 +179,9 @@ class SrvPayment
      */
     public function sendEmails(Reservation $reservation, $amount): void
     {
-        \Log::info("{$reservation->reference} On envoi le mail à {$reservation->email} et ".env('MAIL_RESPONSABLE_RESA', ''));
+        \Log::info("{$reservation->reference} On envoi le mail à {$reservation->email} et ".config('mail.responsable_resa'));
 
         Mail::to($reservation->email)->send(new ConfirmResa($reservation, $amount));
-        Mail::to(env('MAIL_RESPONSABLE_RESA', ''))->send(new NewResaForAdmin($reservation, $amount));
+        Mail::to(config('mail.responsable_resa'))->send(new NewResaForAdmin($reservation, $amount));
     }
 }

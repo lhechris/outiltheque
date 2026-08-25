@@ -20,5 +20,5 @@ class AutoMailWeek extends Command
      */
     public function handle()
     {
-        Mail::to(env('MAIL_RESPONSABLE_RESA',''))->send(new ResaDeLaSemaine(Reservations::listeResaSemaine(),Reservations::listeRetourSemaine()));
+        Mail::to(config('mail.responsable_resa'))->send(new ResaDeLaSemaine(Reservations::listeResaSemaine(),Reservations::listeRetourSemaine()));
     }}
