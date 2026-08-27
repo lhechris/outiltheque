@@ -54,7 +54,7 @@ new class extends Component {
                 })
                 ->when($this->stateFilter, fn ($query) => $query->where('state', $this->stateFilter))
                 ->when($this->paymentStateFilter, fn ($query) => $query->where('payment_state', $this->paymentStateFilter))
-                ->orderBy('date_start');
+                ->orderBy('date_start','desc');
         
         if ($this->historique) {
             $query->where("date_end",'<', Carbon::now());
