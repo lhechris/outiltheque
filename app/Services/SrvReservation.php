@@ -2,15 +2,15 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\Mail;
 use App\Mail\ConfirmResa;
 use App\Mail\NewResaForAdmin;
 use App\Models\Contract;
 use App\Models\Reservation;
 use App\Models\Tool;
 use App\Models\User;
-use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 
 /**
  * NOTE - hypothèses posées sur le modèle (à ajuster si les noms diffèrent) :
@@ -27,7 +27,8 @@ use Carbon\Carbon;
  */
 class SrvReservation
 {
-    private string $message = "";
+    private string $message = '';
+
     public Reservation $reservation;
 
     /**
@@ -47,7 +48,7 @@ class SrvReservation
         DB::transaction(function () use ($user, $tool, $dstart, $dend, $paiement, $comment, &$success) {
 
             \Log::debug("Creation d'une réservation pour {$user->email} {$tool->name} $dstart $dend $paiement");
-            //on verifie si l'outil est disponible sur la période
+            // on verifie si l'outil est disponible sur la période
             $reservationsCount = Reservation::where('tool_id', $tool->id)
                 ->where('state', '!=', Reservation::STATE_CANCELLED)
                 ->where('date_start', '<=', $dend)
@@ -58,6 +59,7 @@ class SrvReservation
             if ($reservationsCount >= $tool->number) {
                 \Log::debug("Pas poossible, il y a $reservationsCount reservations sur la période");
                 $this->message = "Ce matériel n'est plus disponible sur cette période.";
+
                 return;
             }
 
@@ -66,15 +68,16 @@ class SrvReservation
 
             //  pour un forfait on verifie le dépassement de quota
             if ($paiement === 'forfait') {
-                \Log::debug("Paiement au forfait, on vérifie les quota");
+                \Log::debug('Paiement au forfait, on vérifie les quota');
                 $payment_state = Reservation::PAYMENT_STATE_FORFAIT;
-                if( $this->forfaitQuotaExceeded($user,$tool->contract,$dstart)) {
+                if ($this->forfaitQuotaExceeded($user, $tool->contract, $dstart)) {
                     $this->message = "Vous avez dépasser le quota de réservation ({$tool->contract->restriction}).";
                     \Log::info("$user->email a depassé le quota ");
+
                     return;
                 }
 
-                //Si le forfait est payé on peut passer à confirmé
+                // Si le forfait est payé on peut passer à confirmé
                 $contract = $user->contracts()->firstWhere('contracts.id', $tool->contract->id);
                 $ps = $contract?->pivot?->payment_state;
                 if ($ps) {
@@ -84,33 +87,33 @@ class SrvReservation
                         \Log::info("Le contrat pour $user->email est payé");
                     }
                 } else {
-                    //pas de contract pour cet user, il sera cree dans SrvPayment
+                    // pas de contract pour cet user, il sera cree dans SrvPayment
                     \Log::info("Pas de contrat pour $user->email");
                 }
             }
 
             $this->reservation = Reservation::create([
-                'reference'     => 'LBO' . date('ym') . rand(1000, 9999),
-                'tool_id'       => $tool->id,
-                'user_id'       => $user->id,
-                'name'          => $user->firstname . " " . $user->name,
-                'email'         => $user->email,
-                'phone'         => $user->phone,
-                'date_start'    => $dstart,
-                'date_end'      => $dend,
-                'comment'       => $comment,
-                'state'         => $state,
+                'reference' => 'LBO'.date('ym').rand(1000, 9999),
+                'tool_id' => $tool->id,
+                'user_id' => $user->id,
+                'name' => $user->firstname.' '.$user->name,
+                'email' => $user->email,
+                'phone' => $user->phone,
+                'date_start' => $dstart,
+                'date_end' => $dend,
+                'comment' => $comment,
+                'state' => $state,
                 'payment_state' => $payment_state,
             ]);
 
             if ($state == Reservation::STATE_CONFIRMED) {
-                \Log::info("{$this->reservation->reference} On envoi le mail à {$this->reservation->email} et " . config('mail.responsable_resa'));
+                \Log::info("{$this->reservation->reference} On envoi le mail à {$this->reservation->email} et ".config('mail.responsable_resa'));
                 Mail::to($this->reservation->email)->send(new ConfirmResa($this->reservation));
                 Mail::to(config('mail.responsable_resa'))->send(new NewResaForAdmin($this->reservation));
             }
 
             $success = true;
-            $this->message = "Réservation effectuée avec succès.";
+            $this->message = 'Réservation effectuée avec succès.';
         });
 
         return $success;
@@ -131,7 +134,8 @@ class SrvReservation
             $this->reservation->state = Reservation::STATE_CANCELLED;
             $this->reservation->setCancelled();
 
-            $this->message = "Succès annulation de la réservation";
+            $this->message = 'Succès annulation de la réservation';
+
             return true;
         }
 
@@ -140,11 +144,13 @@ class SrvReservation
             $this->reservation->state = Reservation::STATE_CANCELLED;
             $this->reservation->setCancelled();
 
-            $this->message = "Succès annulation de la réservation";
+            $this->message = 'Succès annulation de la réservation';
+
             return true;
         }
 
         $this->message = "Vous n'êtes pas autorisé.";
+
         return false;
     }
 
@@ -176,24 +182,61 @@ class SrvReservation
         }
 
         if ($reservation->payment_state == Reservation::PAYMENT_STATE_FORFAIT) {
-            //Est ce qu'il exite un contract payé
+            // Est ce qu'il exite un contract payé
             $hasPaidContract = $reservation->user->contracts()
                 ->where('contracts.id', $reservation->tool->contract->id)
-                ->wherePivotIn('payment_state', [Reservation::PAYMENT_STATE_HA_PAYED,Reservation::PAYMENT_STATE_PAYED])
+                ->wherePivotIn('payment_state', [Reservation::PAYMENT_STATE_HA_PAYED, Reservation::PAYMENT_STATE_PAYED])
                 ->exists();
-            return(!$hasPaidContract);
+
+            return ! $hasPaidContract;
 
         } else {
-            return($reservation->payment_state == Reservation::PAYMENT_STATE_UNPAID);
+            return $reservation->payment_state == Reservation::PAYMENT_STATE_UNPAID;
         }
 
+    }
+
+    /**
+     * Recommence un payment si l'utilisateur à annuler un paiement HA
+     */
+    public function restartPay(Reservation $reservation): bool
+    {
+        if ($reservation->state != Reservation::STATE_PAYMENT) {
+            return false;
+        }
+
+        if ($reservation->payment_state == Reservation::PAYMENT_STATE_FORFAIT) {
+            // Est ce qu'il exite un contract payé
+            $contract = $reservation->user->contracts()
+                ->where('contracts.id', $reservation->tool->contract->id)
+                ->wherePivotIn('payment_state', [Reservation::PAYMENT_STATE_HA_PENDING])
+                ->first();
+            if ($contract) {
+                $contract->pivot->update(['payment_state' => Reservation::PAYMENT_STATE_UNPAID]);
+                $reservation->update(['state' => Reservation::STATE_RESERVED]);
+            }
+
+            return true;
+
+        } elseif ($reservation->payment_state == Reservation::PAYMENT_STATE_HA_PENDING) {
+            $reservation->update([
+                'state' => Reservation::STATE_RESERVED,
+                'payment_state' => Reservation::PAYMENT_STATE_UNPAID,
+            ]);
+
+            return true;
+        } else {
+            \Log::info('On ne peut pas recommencer le paiement '.$reservation->reference.' '.$reservation->state.' '.$reservation->payment_state);
+
+            return false;
+        }
     }
 
     /**
      * Détermine si l'utilisateur a atteint le quota de son forfait pour ce contrat.
      * Priorité : mensuel puis annuel ; si aucun des deux n'est défini => illimité.
      */
-    private function forfaitQuotaExceeded(User $user, Contract $contract,string $dstart): bool
+    private function forfaitQuotaExceeded(User $user, Contract $contract, string $dstart): bool
     {
 
         $maxPerMonth = null;
@@ -201,20 +244,21 @@ class SrvReservation
         $maxQuota = null;
         $windowDays = null;
 
-        if (preg_match('/^(\d+)\s+par\s+(mois|an)$/i', (string)$contract->restriction, $m)) {
+        if (preg_match('/^(\d+)\s+par\s+(mois|an)$/i', (string) $contract->restriction, $m)) {
             match (strtolower($m[2])) {
                 'mois' => $maxPerMonth = (int) $m[1],
-                'an'   => $maxPerYear = (int) $m[1],
+                'an' => $maxPerYear = (int) $m[1],
             };
         }
 
-        if (preg_match('/^(\d+)\s+pendant\s+(\d+)\s+jours?$/i', (string)$contract->restriction, $m)) {
+        if (preg_match('/^(\d+)\s+pendant\s+(\d+)\s+jours?$/i', (string) $contract->restriction, $m)) {
             $maxQuota = (int) $m[1];
             $windowDays = (int) $m[2];
         }
 
         if (is_null($maxPerMonth) && is_null($maxPerYear) && is_null($maxQuota) && is_null($windowDays)) {
-            \Log::debug("Pas de quota");
+            \Log::debug('Pas de quota');
+
             return false; // illimité
         }
 
@@ -227,19 +271,22 @@ class SrvReservation
             ->whereBetween('date_start', [$start, $end])
             ->count();
 
-        if (!is_null($maxPerMonth)) {
+        if (! is_null($maxPerMonth)) {
             $used = $usedQuery($dstart->copy()->startOfMonth(), $dstart->copy()->endOfMonth());
+
             return $used >= $maxPerMonth;
         }
-        if (!is_null($maxPerYear)) {
+        if (! is_null($maxPerYear)) {
             $used = $usedQuery($dstart->copy()->startOfYear(), $dstart->copy()->endOfYear());
+
             return $used >= $maxPerYear;
         }
-        
-        $ds=$dstart->copy()->subDays($windowDays);
-        $de=$dstart->copy();
 
-        $used = $usedQuery($ds,$de);
+        $ds = $dstart->copy()->subDays($windowDays);
+        $de = $dstart->copy();
+
+        $used = $usedQuery($ds, $de);
+
         return $used >= $maxQuota;
 
     }

@@ -1,17 +1,17 @@
 <?php
 
+use App\Mail\ConfirmResa;
+use App\Mail\NewResaForAdmin;
 use App\Models\Category;
 use App\Models\Contract;
 use App\Models\Reservation;
+use App\Models\Subscription;
 use App\Models\Tool;
 use App\Models\User;
-use App\Models\Subscription;
 use App\Services\SrvReservation;
-use App\Mail\ConfirmResa;
-use App\Mail\NewResaForAdmin;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
-use Carbon\Carbon;
 
 use function Pest\Laravel\actingAs;
 
@@ -25,8 +25,7 @@ use function Pest\Laravel\actingAs;
 | - Factories : User::factory(), Tool::factory(), Category::factory(), Contract::factory()
 */
 
-uses( RefreshDatabase::class);
-
+uses(RefreshDatabase::class);
 
 function givePaidContract(User $user, Contract $contract, string $state = Reservation::PAYMENT_STATE_PAYED): void
 {
@@ -55,9 +54,9 @@ beforeEach(function () {
 */
 
 it('crée une réservation quand le matériel est disponible', function () {
-    $tool    = makeTool(number: 2);
-    $user    = makeUser();
-    $service = new SrvReservation();
+    $tool = makeTool(number: 2);
+    $user = makeUser();
+    $service = new SrvReservation;
 
     $result = $service->create($user, $tool, '2026-08-13', '2026-08-19', 'unique', 'RAS');
 
@@ -73,10 +72,10 @@ it('crée une réservation quand le matériel est disponible', function () {
 });
 
 it("ne crée pas de réservation quand le matériel n'a plus de disponibilité", function () {
-    $tool       = makeTool(number: 1);
-    $firstUser  = makeUser();
+    $tool = makeTool(number: 1);
+    $firstUser = makeUser();
     $secondUser = makeUser();
-    $service    = new SrvReservation();
+    $service = new SrvReservation;
 
     $service->create($firstUser, $tool, '2026-08-13', '2026-08-19', 'unpaid', null);
     $this->assertDatabaseCount('reservations', 1);
@@ -88,18 +87,18 @@ it("ne crée pas de réservation quand le matériel n'a plus de disponibilité",
     expect($service->getMessage())->toBe("Ce matériel n'est plus disponible sur cette période.");
 });
 
-it("ignore les réservations annulées lors du calcul de disponibilité", function () {
-    $tool       = makeTool(number: 1);
-    $firstUser  = makeUser();
+it('ignore les réservations annulées lors du calcul de disponibilité', function () {
+    $tool = makeTool(number: 1);
+    $firstUser = makeUser();
     $secondUser = makeUser();
-    $service    = new SrvReservation();
+    $service = new SrvReservation;
 
     Reservation::factory()->create([
-        'tool_id'    => $tool->id,
-        'user_id'    => $firstUser->id,
+        'tool_id' => $tool->id,
+        'user_id' => $firstUser->id,
         'date_start' => '2026-08-13',
-        'date_end'   => '2026-08-19',
-        'state'      => Reservation::STATE_CANCELLED,
+        'date_end' => '2026-08-19',
+        'state' => Reservation::STATE_CANCELLED,
     ]);
 
     $result = $service->create($secondUser, $tool, '2026-08-13', '2026-08-19', 'unpaid', null);
@@ -108,20 +107,20 @@ it("ignore les réservations annulées lors du calcul de disponibilité", functi
     $this->assertDatabaseCount('reservations', 2);
 });
 
-it("ne prend pas en compte les contrats expirés", function () {
-    $tool       = makeTool(number: 1);
-    $user  = makeUser();
-    $service    = new SrvReservation();
+it('ne prend pas en compte les contrats expirés', function () {
+    $tool = makeTool(number: 1);
+    $user = makeUser();
+    $service = new SrvReservation;
     $subscribe = Subscription::create([
-        "user_id" => $user->id,
-        "contract_id" => $tool->contract_id,
-        "payment_state" => Reservation::PAYMENT_STATE_PAYED,
-        "begin" => now(),
-        "expire" => "2026-07-31" //now a ete positionné au 01/08/2026
+        'user_id' => $user->id,
+        'contract_id' => $tool->contract_id,
+        'payment_state' => Reservation::PAYMENT_STATE_PAYED,
+        'begin' => now(),
+        'expire' => '2026-07-31', // now a ete positionné au 01/08/2026
     ]);
 
-    //Le contrat est payé mais expiré, c'est comme si il n'y avait pas de contrat
-    //donc on a une reservation est reserved et non pas confirmed
+    // Le contrat est payé mais expiré, c'est comme si il n'y avait pas de contrat
+    // donc on a une reservation est reserved et non pas confirmed
     $service->create($user, $tool, '2026-08-13', '2026-08-19', 'forfait', null);
     $this->assertDatabaseHas('reservations', ['state' => Reservation::STATE_RESERVED]);
 
@@ -135,12 +134,12 @@ it("ne prend pas en compte les contrats expirés", function () {
 
 it("crée une réservation forfait quand l'utilisateur a un contrat payé illimité", function () {
     $contract = Contract::factory()->create(['restriction' => 'none']); // illimité
-    $tool     = makeTool(number: 5, contract: $contract);
-    $user     = makeUser();
+    $tool = makeTool(number: 5, contract: $contract);
+    $user = makeUser();
     givePaidContract($user, $contract);
 
-    $service = new SrvReservation();
-    $result  = $service->create($user, $tool, '2026-08-13', '2026-08-19', 'forfait', null);
+    $service = new SrvReservation;
+    $result = $service->create($user, $tool, '2026-08-13', '2026-08-19', 'forfait', null);
 
     expect($result)->toBeTrue();
     expect(Reservation::first()->payment_state)->toBe(Reservation::PAYMENT_STATE_FORFAIT);
@@ -153,42 +152,42 @@ it("crée une réservation forfait quand l'utilisateur a un contrat payé illimi
 
 it("accepte une réservation forfait si l'utilisateur n'a pas de contrat", function () {
     $contract = Contract::factory()->create();
-    $tool     = makeTool(number: 5, contract: $contract);
-    $user     = makeUser(); // pas de contrat souscrit
+    $tool = makeTool(number: 5, contract: $contract);
+    $user = makeUser(); // pas de contrat souscrit
 
-    $service = new SrvReservation();
-    $result  = $service->create($user, $tool, '2026-08-13', '2026-08-19', 'forfait', null);
+    $service = new SrvReservation;
+    $result = $service->create($user, $tool, '2026-08-13', '2026-08-19', 'forfait', null);
 
     expect($result)->toBeTrue();
     expect(Reservation::first()->payment_state)->toBe(Reservation::PAYMENT_STATE_FORFAIT);
-    //$this->assertDatabaseCount('reservations', 0);
-    //expect($service->getMessage())->toBe("Vous n'avez pas de forfait disponible pour ce matériel.");
+    // $this->assertDatabaseCount('reservations', 0);
+    // expect($service->getMessage())->toBe("Vous n'avez pas de forfait disponible pour ce matériel.");
     Mail::assertNothingSent();
 
 });
 
 it("accepte une réservation forfait si le contrat n'est pas payé", function () {
     $contract = Contract::factory()->create();
-    $tool     = makeTool(number: 5, contract: $contract);
-    $user     = makeUser();
+    $tool = makeTool(number: 5, contract: $contract);
+    $user = makeUser();
     givePaidContract($user, $contract, state: Reservation::PAYMENT_STATE_UNPAID);
 
-    $service = new SrvReservation();
-    $result  = $service->create($user, $tool, '2026-08-13', '2026-08-19', 'forfait', null);
+    $service = new SrvReservation;
+    $result = $service->create($user, $tool, '2026-08-13', '2026-08-19', 'forfait', null);
 
     expect($result)->toBeTrue();
     expect(Reservation::first()->payment_state)->toBe(Reservation::PAYMENT_STATE_FORFAIT);
-    //$this->assertDatabaseCount('reservations', 0);
+    // $this->assertDatabaseCount('reservations', 0);
     Mail::assertNothingSent();
 });
 
-it("refuse une réservation forfait quand le quota mensuel est atteint", function () {
+it('refuse une réservation forfait quand le quota mensuel est atteint', function () {
     $contract = Contract::factory()->create(['restriction' => '1 par mois']); // 1 résa forfait max / mois
-    $tool     = makeTool(number: 5, contract: $contract);
-    $user     = makeUser();
+    $tool = makeTool(number: 5, contract: $contract);
+    $user = makeUser();
     givePaidContract($user, $contract);
 
-    $service = new SrvReservation();
+    $service = new SrvReservation;
 
     // 1ère résa forfait du mois : OK
     $first = $service->create($user, $tool, '2026-08-06', '2026-08-12', 'forfait', null);
@@ -199,16 +198,16 @@ it("refuse une réservation forfait quand le quota mensuel est atteint", functio
 
     expect($second)->toBeFalse();
     $this->assertDatabaseCount('reservations', 1);
-    expect($service->getMessage())->toBe("Vous avez dépasser le quota de réservation (1 par mois).");
+    expect($service->getMessage())->toBe('Vous avez dépasser le quota de réservation (1 par mois).');
 });
 
-it("accepte une réservation forfait quand le quota mensuel est de nouveau possible", function () {
+it('accepte une réservation forfait quand le quota mensuel est de nouveau possible', function () {
     $contract = Contract::factory()->create(['restriction' => '2 par mois']); // 1 résa forfait max / mois
-    $tool     = makeTool(number: 5, contract: $contract);
-    $user     = makeUser();
+    $tool = makeTool(number: 5, contract: $contract);
+    $user = makeUser();
     givePaidContract($user, $contract);
 
-    $service = new SrvReservation();
+    $service = new SrvReservation;
 
     // 1ère résa forfait du mois : OK
     $first = $service->create($user, $tool, '2026-08-06', '2026-08-12', 'forfait', null);
@@ -226,13 +225,13 @@ it("accepte une réservation forfait quand le quota mensuel est de nouveau possi
 
 });
 
-it("refuse une réservation forfait quand le quota glissant est atteint", function () {
-    $contract = Contract::factory()->create(['restriction' => '1 pendant 60 jours']); 
-    $tool     = makeTool(number: 5, contract: $contract);
-    $user     = makeUser();
+it('refuse une réservation forfait quand le quota glissant est atteint', function () {
+    $contract = Contract::factory()->create(['restriction' => '1 pendant 60 jours']);
+    $tool = makeTool(number: 5, contract: $contract);
+    $user = makeUser();
     givePaidContract($user, $contract);
 
-    $service = new SrvReservation();
+    $service = new SrvReservation;
 
     // 1ère résa forfait du mois : OK
     $first = $service->create($user, $tool, '2026-08-06', '2026-08-12', 'forfait', null);
@@ -243,16 +242,16 @@ it("refuse une réservation forfait quand le quota glissant est atteint", functi
     expect($second)->toBeFalse();
 
     $this->assertDatabaseCount('reservations', 1);
-    expect($service->getMessage())->toBe("Vous avez dépasser le quota de réservation (1 pendant 60 jours).");
+    expect($service->getMessage())->toBe('Vous avez dépasser le quota de réservation (1 pendant 60 jours).');
 });
 
-it("refuse une réservation forfait quand le quota annuel est atteint", function () {
+it('refuse une réservation forfait quand le quota annuel est atteint', function () {
     $contract = Contract::factory()->create(['restriction' => '1 par an']);
-    $tool     = makeTool(number: 5, contract: $contract);
-    $user     = makeUser();
+    $tool = makeTool(number: 5, contract: $contract);
+    $user = makeUser();
     givePaidContract($user, $contract);
 
-    $service = new SrvReservation();
+    $service = new SrvReservation;
 
     $first = $service->create($user, $tool, '2026-01-08', '2026-01-14', 'forfait', null);
     expect($first)->toBeTrue();
@@ -264,23 +263,23 @@ it("refuse une réservation forfait quand le quota annuel est atteint", function
     $this->assertDatabaseCount('reservations', 1);
 });
 
-it("ne compte pas les réservations forfait annulées dans le quota", function () {
+it('ne compte pas les réservations forfait annulées dans le quota', function () {
     $contract = Contract::factory()->create(['restriction' => '1 par mois']);
-    $tool     = makeTool(number: 5, contract: $contract);
-    $user     = makeUser();
+    $tool = makeTool(number: 5, contract: $contract);
+    $user = makeUser();
     givePaidContract($user, $contract);
 
     Reservation::factory()->create([
-        'tool_id'       => $tool->id,
-        'user_id'       => $user->id,
-        'date_start'    => now()->startOfMonth()->addDays(2),
-        'date_end'      => now()->startOfMonth()->addDays(5),
-        'state'         => Reservation::STATE_CANCELLED,
+        'tool_id' => $tool->id,
+        'user_id' => $user->id,
+        'date_start' => now()->startOfMonth()->addDays(2),
+        'date_end' => now()->startOfMonth()->addDays(5),
+        'state' => Reservation::STATE_CANCELLED,
         'payment_state' => Reservation::PAYMENT_STATE_FORFAIT,
     ]);
 
-    $service = new SrvReservation();
-    $result  = $service->create(
+    $service = new SrvReservation;
+    $result = $service->create(
         $user,
         $tool,
         now()->startOfMonth()->addDays(10)->toDateString(),
@@ -297,10 +296,10 @@ it("ne compte pas les réservations forfait annulées dans le quota", function (
 
 it("reflète directement l'éligibilité via isForfait", function () {
     $contract = Contract::factory()->create();
-    $tool     = makeTool(number: 5, contract: $contract);
-    $user     = makeUser();
+    $tool = makeTool(number: 5, contract: $contract);
+    $user = makeUser();
 
-    $service = new SrvReservation();
+    $service = new SrvReservation;
 
     expect($service->isForfait($user, $tool))->toBeFalse();
 
@@ -314,23 +313,23 @@ it("reflète directement l'éligibilité via isForfait", function () {
 | needToPay
 |--------------------------------------------------------------------------
 */
-it("Ne demande a payer que dans l'état réservé et n'a pas payé", function() {
+it("Ne demande a payer que dans l'état réservé et n'a pas payé", function () {
     $owner = makeUser();
-    $tool  = makeTool();
+    $tool = makeTool();
 
     $reservation = Reservation::factory()->create([
         'tool_id' => $tool->id,
         'user_id' => $owner->id,
-        'state'   => Reservation::STATE_RESERVED,
+        'state' => Reservation::STATE_RESERVED,
         'payment_state' => Reservation::PAYMENT_STATE_UNPAID,
     ]);
 
     actingAs($owner);
 
-    $service = new SrvReservation();
+    $service = new SrvReservation;
     // RESERVED & Unpaid => TRUE
     expect($service->needToPay($reservation))->toBeTrue();
-    
+
     // RESERVED & FORFAIT & no contract => TRUE
     $reservation->payment_state = Reservation::PAYMENT_STATE_FORFAIT;
     expect($service->needToPay($reservation))->toBeTrue();
@@ -354,58 +353,149 @@ it("Ne demande a payer que dans l'état réservé et n'a pas payé", function() 
     // PAYMENT in progress => FALSE
     $reservation->state = Reservation::STATE_PAYMENT;
     expect($service->needToPay($reservation))->toBeFalse();
-    
-    //CONFIRMED => FALSE
+
+    // CONFIRMED => FALSE
     $reservation->state = Reservation::STATE_CONFIRMED;
     expect($service->needToPay($reservation))->toBeFalse();
 
-    //CANCELD => FALSE
+    // CANCELD => FALSE
     $reservation->state = Reservation::STATE_CANCELLED;
     expect($service->needToPay($reservation))->toBeFalse();
 
 });
 
-it("Demande a payer un forfait si le contrat n'est pas payé ", function() {
+it("Demande a payer un forfait si le contrat n'est pas payé ", function () {
     $contract = Contract::factory()->create();
-    $tool     = makeTool(number: 5, contract: $contract);
+    $tool = makeTool(number: 5, contract: $contract);
     $owner = makeUser();
-    givePaidContract($owner,$contract,Reservation::PAYMENT_STATE_UNPAID);
+    givePaidContract($owner, $contract, Reservation::PAYMENT_STATE_UNPAID);
 
     $reservation = Reservation::factory()->create([
         'tool_id' => $tool->id,
         'user_id' => $owner->id,
-        'state'   => Reservation::STATE_RESERVED,
+        'state' => Reservation::STATE_RESERVED,
         'payment_state' => Reservation::PAYMENT_STATE_FORFAIT,
     ]);
 
     actingAs($owner);
-    //dump(DB::select('SELECT * FROM contract_user'));
+    // dump(DB::select('SELECT * FROM contract_user'));
 
-    $service = new SrvReservation();
+    $service = new SrvReservation;
     expect($service->needToPay($reservation))->toBeTrue();
 
 });
 
-it("Ne demande pas à payer un forfait si le contrat est payé ", function() {
+it('Ne demande pas à payer un forfait si le contrat est payé ', function () {
     $contract = Contract::factory()->create();
-    $tool     = makeTool(number: 5, contract: $contract);
+    $tool = makeTool(number: 5, contract: $contract);
     $owner = makeUser();
 
-    givePaidContract($owner,$contract,Reservation::PAYMENT_STATE_PAYED);
+    givePaidContract($owner, $contract, Reservation::PAYMENT_STATE_PAYED);
 
     $reservation = Reservation::factory()->create([
         'tool_id' => $tool->id,
         'user_id' => $owner->id,
-        'state'   => Reservation::STATE_RESERVED,
+        'state' => Reservation::STATE_RESERVED,
         'payment_state' => Reservation::PAYMENT_STATE_FORFAIT,
     ]);
 
     actingAs($owner);
 
-    $service = new SrvReservation();
+    $service = new SrvReservation;
     expect($service->needToPay($reservation))->toBeFalse();
 });
 
+/*
+|--------------------------------------------------------------------------
+| restartPay
+|--------------------------------------------------------------------------
+*/
+it('ne redémarre pas un paiement si la réservation n’est pas en paiement', function () {
+    $user = makeUser();
+    $tool = makeTool();
+    $reservation = Reservation::factory()->create([
+        'tool_id' => $tool->id,
+        'user_id' => $user->id,
+        'state' => Reservation::STATE_RESERVED,
+        'payment_state' => Reservation::PAYMENT_STATE_HA_PENDING,
+    ]);
+
+    $service = new SrvReservation;
+
+    expect($service->restartPay($reservation))->toBeFalse();
+    $this->assertDatabaseHas('reservations', [
+        'id' => $reservation->id,
+        'state' => Reservation::STATE_RESERVED,
+        'payment_state' => Reservation::PAYMENT_STATE_HA_PENDING,
+    ]);
+});
+
+it('redémarre un paiement HelloAsso à l’unité', function () {
+    $user = makeUser();
+    $tool = makeTool();
+    $reservation = Reservation::factory()->create([
+        'tool_id' => $tool->id,
+        'user_id' => $user->id,
+        'state' => Reservation::STATE_PAYMENT,
+        'payment_state' => Reservation::PAYMENT_STATE_HA_PENDING,
+    ]);
+
+    $service = new SrvReservation;
+
+    expect($service->restartPay($reservation))->toBeTrue();
+    $this->assertDatabaseHas('reservations', [
+        'id' => $reservation->id,
+        'state' => Reservation::STATE_RESERVED,
+        'payment_state' => Reservation::PAYMENT_STATE_UNPAID,
+    ]);
+});
+
+it('redémarre le paiement d’un forfait et remet le contrat à non payé', function () {
+    $contract = Contract::factory()->create();
+    $tool = makeTool(contract: $contract);
+    $user = makeUser();
+    givePaidContract($user, $contract, Reservation::PAYMENT_STATE_HA_PENDING);
+    $reservation = Reservation::factory()->create([
+        'tool_id' => $tool->id,
+        'user_id' => $user->id,
+        'state' => Reservation::STATE_PAYMENT,
+        'payment_state' => Reservation::PAYMENT_STATE_FORFAIT,
+    ]);
+
+    $service = new SrvReservation;
+
+    expect($service->restartPay($reservation))->toBeTrue();
+    $this->assertDatabaseHas('reservations', [
+        'id' => $reservation->id,
+        'state' => Reservation::STATE_RESERVED,
+        'payment_state' => Reservation::PAYMENT_STATE_FORFAIT,
+    ]);
+    $this->assertDatabaseHas('contract_user', [
+        'user_id' => $user->id,
+        'contract_id' => $contract->id,
+        'payment_state' => Reservation::PAYMENT_STATE_UNPAID,
+    ]);
+});
+
+it('ne redémarre pas un paiement avec un état de paiement incompatible', function () {
+    $user = makeUser();
+    $tool = makeTool();
+    $reservation = Reservation::factory()->create([
+        'tool_id' => $tool->id,
+        'user_id' => $user->id,
+        'state' => Reservation::STATE_PAYMENT,
+        'payment_state' => Reservation::PAYMENT_STATE_PAYED,
+    ]);
+
+    $service = new SrvReservation;
+
+    expect($service->restartPay($reservation))->toBeFalse();
+    $this->assertDatabaseHas('reservations', [
+        'id' => $reservation->id,
+        'state' => Reservation::STATE_PAYMENT,
+        'payment_state' => Reservation::PAYMENT_STATE_PAYED,
+    ]);
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -416,63 +506,63 @@ it("Ne demande pas à payer un forfait si le contrat est payé ", function() {
 it("permet à un admin d'annuler n'importe quelle réservation", function () {
     $admin = makeUser('admin');
     $owner = makeUser();
-    $tool  = makeTool();
+    $tool = makeTool();
 
     $reservation = Reservation::factory()->create([
         'tool_id' => $tool->id,
         'user_id' => $owner->id,
-        'state'   => Reservation::STATE_RESERVED,
+        'state' => Reservation::STATE_RESERVED,
     ]);
 
     actingAs($admin);
 
-    $service = new SrvReservation();
-    $result  = $service->cancel($reservation);
+    $service = new SrvReservation;
+    $result = $service->cancel($reservation);
 
     expect($result)->toBeTrue();
     $this->assertDatabaseHas('reservations', [
         'reference' => $reservation->reference,
-        'state'     => Reservation::STATE_CANCELLED,
-    ]);    
+        'state' => Reservation::STATE_CANCELLED,
+    ]);
 
 });
 
 it("permet au propriétaire d'annuler sa propre réservation réservée", function () {
     $owner = makeUser();
-    $tool  = makeTool();
+    $tool = makeTool();
 
     $reservation = Reservation::factory()->create([
         'tool_id' => $tool->id,
         'user_id' => $owner->id,
-        'state'   => Reservation::STATE_RESERVED,
+        'state' => Reservation::STATE_RESERVED,
     ]);
 
     actingAs($owner);
 
-    $service = new SrvReservation();
-    $result  = $service->cancel($reservation);
+    $service = new SrvReservation;
+    $result = $service->cancel($reservation);
 
     expect($result)->toBeTrue();
     $this->assertDatabaseHas('reservations', [
         'reference' => $reservation->reference,
-        'state'     => Reservation::STATE_CANCELLED,
+        'state' => Reservation::STATE_CANCELLED,
     ]);
 });
 
 it("empêche le propriétaire d'annuler une réservation qui n'est pas à l'état réservé", function () {
     $owner = makeUser();
-    $tool  = makeTool();
+    $tool = makeTool();
 
     $reservation = Reservation::factory()->create([
         'tool_id' => $tool->id,
         'user_id' => $owner->id,
-        'state'   => Reservation::STATE_CANCELLED,
+        'state' => Reservation::STATE_CANCELLED,
     ]);
 
     actingAs($owner);
 
-    $service = new SrvReservation();
-    $result  = $service->cancel($reservation);
+    $service = new SrvReservation;
+    $result = $service->cancel($reservation);
 
     expect($result)->toBeFalse();
     $this->assertDatabaseHas('reservations', ['id' => $reservation->id]);
@@ -482,18 +572,18 @@ it("empêche le propriétaire d'annuler une réservation qui n'est pas à l'éta
 it("empêche un autre utilisateur d'annuler la réservation de quelqu'un d'autre", function () {
     $owner = makeUser();
     $other = makeUser();
-    $tool  = makeTool();
+    $tool = makeTool();
 
     $reservation = Reservation::factory()->create([
         'tool_id' => $tool->id,
         'user_id' => $owner->id,
-        'state'   => Reservation::STATE_RESERVED,
+        'state' => Reservation::STATE_RESERVED,
     ]);
 
     actingAs($other);
 
-    $service = new SrvReservation();
-    $result  = $service->cancel($reservation);
+    $service = new SrvReservation;
+    $result = $service->cancel($reservation);
 
     expect($result)->toBeFalse();
     $this->assertDatabaseHas('reservations', ['id' => $reservation->id]);

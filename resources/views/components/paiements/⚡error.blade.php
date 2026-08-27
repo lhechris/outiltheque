@@ -2,6 +2,7 @@
 
 use Livewire\Component;
 use App\Models\Reservation;
+use App\Services\SrvReservation;
 
 new class extends Component
 {
@@ -13,6 +14,14 @@ new class extends Component
     }
 
     public function recommencer() {
+
+        $srvResa = app(SrvReservation::class);
+        if ($this->reservation && $srvResa->restartPay($this->reservation)) {
+            redirect(route('payments.select',['ref'=> $this->reservation->reference]));
+            
+        } else {
+            \Log::info($this->reservation->reference." Impossible de recommencer la resa, mauvais etat [".$this->reservation->state."] attendu [Réservé] ou [Paiement]");
+        }
 
     }
 
